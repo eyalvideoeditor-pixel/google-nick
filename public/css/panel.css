@@ -385,6 +385,7 @@ html.np-lock, html.np-lock body { overflow: hidden; }
 .np-range::-moz-range-track { background: transparent; }
 .np-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(196, 181, 253, .7); }
 .np-boost-val { min-width: 48px; color: #f9a8d4; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
+.np-boost-val.max { color: #fb7185; text-shadow: 0 0 12px rgba(244, 63, 94, .7); letter-spacing: .04em; }
 
 .np-switch { display: inline-flex; align-items: center; gap: 10px; color: #d4d4e0; font-size: 13px; white-space: nowrap; cursor: pointer; user-select: none; }
 .np-switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }

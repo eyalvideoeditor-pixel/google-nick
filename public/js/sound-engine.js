@@ -6,12 +6,17 @@
  * that arrives before that is held and played the moment the visitor interacts
  * (if it is still fresh).
  *
- * Loudness: source -> gain (boost, up to 5x) -> compressor/limiter -> speakers.
+ * Loudness: source -> gain (boost 1x-4.5x) -> compressor/limiter -> speakers.
+ * At the top of the slider (5 = "MAX") it switches to the loudest output a web page can make:
+ * cut the sub-bass, lift the 3 kHz range the ear is most sensitive to, then drive the signal
+ * hard into a clipper that holds it at full digital scale.
  */
 (function () {
   'use strict';
 
   var AC = window.AudioContext || window.webkitAudioContext;
+  var MAX_BOOST = 5;
+  var MAX_DRIVE = 20;
   var PENDING_TTL_MS = 30000;
   var MAX_CACHED = 6;
   var MAX_CACHED_SECONDS = 90;
@@ -19,6 +24,7 @@
 
   var ctx = null;
   var bus = null;
+  var maxBus = null;
   var gen = 0;            // bumped by stopAll(); stale jobs check it before starting
   var pending = null;     // sound waiting for the audio to unlock
   var decoded = new Map(); // url -> Promise<AudioBuffer> (LRU)
@@ -53,6 +59,32 @@
     bus = comp;
     ctx.onstatechange = function () { if (ctx.state === 'running') flush(); };
     return ctx;
+  }
+
+  function getMaxBus() {
+    if (maxBus) return maxBus;
+    var highpass = ctx.createBiquadFilter();
+    highpass.type = 'highpass';
+    highpass.frequency.value = 120;
+    var presence = ctx.createBiquadFilter();
+    presence.type = 'peaking';
+    presence.frequency.value = 3000;
+    presence.Q.value = 0.8;
+    presence.gain.value = 6;
+    var drive = ctx.createGain();
+    drive.gain.value = MAX_DRIVE;
+    // Identity curve: the shaper clamps anything beyond +/-1, so this is a hard clip at full scale.
+    var curve = new Float32Array(2048);
+    for (var i = 0; i < curve.length; i++) curve[i] = (i * 2) / (curve.length - 1) - 1;
+    var clip = ctx.createWaveShaper();
+    clip.curve = curve;
+    clip.oversample = '4x';
+    highpass.connect(presence);
+    presence.connect(drive);
+    drive.connect(clip);
+    clip.connect(ctx.destination);
+    maxBus = highpass;
+    return maxBus;
   }
 
   function resume() {
@@ -131,9 +163,11 @@
     var src = ctx.createBufferSource();
     var gain = ctx.createGain();
     src.buffer = buffer;
-    gain.gain.value = clampBoost(job.boost);
+    var boost = clampBoost(job.boost);
+    var max = boost >= MAX_BOOST;
+    gain.gain.value = max ? 1 : boost;
     src.connect(gain);
-    gain.connect(bus);
+    gain.connect(max ? getMaxBus() : bus);
     var voice = {
       id: job.sound.id,
       stop: function () { try { src.stop(); } catch (e) {} }

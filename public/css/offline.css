@@ -1,0 +1,38 @@
+/* Chrome "No internet" error page look-alike */
+body.is-offline { background: #fff; }
+
+.ofl {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #fff;
+  color: #5f6368;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.ofl-wrap { max-width: 600px; margin: 0 auto; padding: 60px 24px 40px; }
+.ofl-runner { direction: ltr; height: 150px; }
+.ofl-runner canvas { display: block; color: #535353; }
+.ofl-title { margin: 6px 0 16px; color: #202124; font-size: 1.6em; font-weight: 400; line-height: 1.25em; }
+.ofl-try { margin: 0; }
+.ofl-list { margin: 0; padding-inline-start: 40px; }
+.ofl-list a { color: #1a73e8; text-decoration: none; }
+.ofl-list a:hover { text-decoration: underline; }
+.ofl-code { margin-top: 16px; color: #5f6368; font-size: .86667em; text-transform: uppercase; }
+
+@media (prefers-color-scheme: dark) {
+  body.is-offline, .ofl { background: #202124; }
+  .ofl { color: #9aa0a6; }
+  .ofl-title { color: #e8eaed; }
+  .ofl-runner canvas { color: #acacac; }
+  .ofl-list a { color: #8ab4f8; }
+  .ofl-code { color: #9aa0a6; }
+}
+
+@media (max-width: 600px) {
+  .ofl-wrap { padding: 36px 20px 32px; }
+  .ofl-title { font-size: 1.5em; }
+}
