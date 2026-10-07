@@ -88,20 +88,21 @@
   }
 
   /* =====================================================================
-   * Google page
+   * Google pages: home (/) and search results (/search?q=...)
    * =================================================================== */
 
-  var form = $('g-form');
-  var input = $('g-q');
-  var clearBtn = $('g-clear');
-  var avatarBtn = $('g-avatar');
+  var homePage = $('g-page');
+  var serpPage = $('s-page');
+  var homeInput = $('g-q');
+  var serpInput = $('s-q');
   var account = $('g-account');
+  var avatars = Array.prototype.slice.call(document.querySelectorAll('[data-avatar]'));
 
   function normalize(q) {
     q = String(q || '');
     if (q.normalize) q = q.normalize('NFC');
     return q
-      .replace(/[֑-ׇ​-‏‪-‮"'`״׳]/g, '') // niqqud, direction marks, quotes
+      .replace(/[\u0591-\u05C7\u200B-\u200F\u202A-\u202E"'`\u05F3\u05F4]/g, '') // niqqud, direction marks, quotes
       .replace(/\s+/g, ' ')
       .trim();
   }
@@ -116,46 +117,344 @@
     }
   }
 
-  function syncClear() {
-    var has = input.value.length > 0;
-    clearBtn.hidden = !has;
-    form.classList.toggle('has-text', has);
+  function bindSearchBox(formEl, inputEl, clearEl) {
+    function sync() {
+      var has = inputEl.value.length > 0;
+      clearEl.hidden = !has;
+      formEl.classList.toggle('has-text', has);
+    }
+    inputEl.addEventListener('input', sync);
+    clearEl.addEventListener('click', function () { inputEl.value = ''; sync(); inputEl.focus(); });
+    formEl.addEventListener('submit', function (e) { e.preventDefault(); search(inputEl, sync, false); });
+    sync();
+    return sync;
   }
 
-  function search(lucky) {
-    if (normalize(input.value) === TRIGGER) {
-      input.value = '';
-      syncClear();
-      input.blur();
+  var syncHome = bindSearchBox($('g-form'), homeInput, $('g-clear'));
+  var syncSerp = bindSearchBox($('s-form'), serpInput, $('s-clear'));
+  $('g-lucky').addEventListener('click', function () { search(homeInput, syncHome, true); });
+
+  function search(inputEl, sync, lucky) {
+    if (normalize(inputEl.value) === TRIGGER) {
+      inputEl.value = '';
+      sync();
+      inputEl.blur();
       Panel.open();
       return;
     }
-    var q = input.value.trim();
+    var q = inputEl.value.trim();
     if (!q) {
       if (lucky) openExternal('https://www.google.com/doodles');
-      else input.focus();
+      else inputEl.focus();
       return;
     }
-    // New tab, so this page (and its sound connection) stays open behind it.
-    openExternal('https://www.google.com/search?hl=iw&q=' + encodeURIComponent(q) + (lucky ? '&btnI=1' : ''));
+    inputEl.blur(); // closes the phone keyboard
+    go('/search?q=' + encodeURIComponent(q));
   }
 
-  form.addEventListener('submit', function (e) { e.preventDefault(); search(false); });
-  $('g-lucky').addEventListener('click', function () { search(true); });
-  input.addEventListener('input', syncClear);
-  clearBtn.addEventListener('click', function () { input.value = ''; syncClear(); input.focus(); });
-  syncClear();
-  try {
-    if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) input.focus();
-  } catch (e) {}
+  // ---- routing: one page, the URL decides which view is shown ----
 
-  function setAccount(open) {
+  function go(url) {
+    try {
+      history.pushState(null, '', url);
+    } catch (e) {
+      location.href = url;
+      return;
+    }
+    route();
+  }
+
+  function queryParams() {
+    var out = {};
+    location.search.replace(/^\?/, '').split('&').forEach(function (pair) {
+      if (!pair) return;
+      var i = pair.indexOf('=');
+      var k = i > -1 ? pair.slice(0, i) : pair;
+      var v = i > -1 ? pair.slice(i + 1) : '';
+      try { out[decodeURIComponent(k)] = decodeURIComponent(v.replace(/\+/g, ' ')); } catch (e) {}
+    });
+    return out;
+  }
+
+  function route() {
+    setAccount(false);
+    var params = queryParams();
+    var q = (params.q || '').trim();
+    var isSearch = location.pathname.replace(/\/+$/, '') === '/search' && q;
+    if (isSearch && normalize(q) === TRIGGER) {
+      try { history.replaceState(null, '', '/'); } catch (e) {}
+      showHome();
+      Panel.open();
+      return;
+    }
+    if (isSearch) showSerp(q, Math.max(0, parseInt(params.start, 10) || 0));
+    else showHome();
+  }
+
+  function showHome() {
+    serpPage.hidden = true;
+    homePage.hidden = false;
+    document.title = 'Google';
+  }
+
+  function showSerp(q, start) {
+    homePage.hidden = true;
+    serpPage.hidden = false;
+    serpInput.value = q;
+    syncSerp();
+    document.title = q + ' - חיפוש ב-Google';
+    setTabs(q);
+    window.scrollTo(0, 0);
+    Serp.load(q, start);
+  }
+
+  window.addEventListener('popstate', route);
+
+  // In-site links (logo, pager, suggestions) change the view without reloading the page,
+  // so the sound connection stays alive.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[data-spa]');
+    if (!a || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    go(a.getAttribute('href'));
+  });
+
+  var TAB_URLS = {
+    ai: 'https://www.google.com/search?udm=50&hl=iw&q=',
+    images: 'https://www.google.com/search?tbm=isch&hl=iw&q=',
+    videos: 'https://www.google.com/search?tbm=vid&hl=iw&q=',
+    news: 'https://www.google.com/search?tbm=nws&hl=iw&q=',
+    shopping: 'https://www.google.com/search?udm=28&hl=iw&q=',
+    maps: 'https://www.google.com/maps/search/'
+  };
+
+  function setTabs(q) {
+    var enc = encodeURIComponent(q);
+    Array.prototype.forEach.call(document.querySelectorAll('#s-tabs a[data-tab]'), function (a) {
+      var tab = a.getAttribute('data-tab');
+      if (TAB_URLS[tab]) {
+        a.href = TAB_URLS[tab] + enc;
+        a.target = '_blank';
+        a.rel = 'noopener';
+      } else {
+        a.href = '/search?q=' + enc;
+        a.setAttribute('data-spa', '');
+      }
+    });
+  }
+
+  // ---- results (from Wikipedia: free, no key, allows browser requests) ----
+
+  var Serp = (function () {
+    var resultsEl = $('s-results');
+    var kpEl = $('s-kp');
+    var token = 0;
+
+    function fetchJson(url, ms) {
+      var ctrl = window.AbortController ? new AbortController() : null;
+      var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, ms || 8000);
+      return fetch(url, ctrl ? { signal: ctrl.signal } : {}).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      }).then(function (data) {
+        clearTimeout(timer);
+        return data;
+      }, function (err) {
+        clearTimeout(timer);
+        throw err;
+      });
+    }
+
+    function wikiSearch(lang, q, start) {
+      var url = 'https://' + lang + '.wikipedia.org/w/api.php?action=query&list=search&format=json&formatversion=2&origin=*' +
+        '&srlimit=10&srprop=snippet&srinfo=totalhits%7Csuggestion&sroffset=' + start + '&srsearch=' + encodeURIComponent(q);
+      return fetchJson(url).then(function (d) {
+        var qd = d && d.query;
+        if (!qd || !Array.isArray(qd.search)) throw new Error('bad response');
+        var info = qd.searchinfo || {};
+        return { lang: lang, items: qd.search, total: Number(info.totalhits) || qd.search.length, suggestion: info.suggestion || '' };
+      });
+    }
+
+    function pageUrl(lang, title) {
+      return 'https://' + lang + '.wikipedia.org/wiki/' + encodeURIComponent(String(title).replace(/ /g, '_'));
+    }
+
+    function el(tag, cls, text) {
+      var node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text != null) node.textContent = text;
+      return node;
+    }
+
+    function spaHref(q, start) {
+      return '/search?q=' + encodeURIComponent(q) + (start ? '&start=' + start : '');
+    }
+
+    // Wikipedia marks matches with <span class="searchmatch">; turn those into <b>, keep everything else as plain text.
+    function snippet(html) {
+      var frag = document.createDocumentFragment();
+      var doc = new DOMParser().parseFromString('<div>' + String(html || '') + '</div>', 'text/html');
+      var box = doc.body.firstChild;
+      Array.prototype.forEach.call(box ? box.childNodes : [], function (n) {
+        var text = n.textContent;
+        if (!text) return;
+        if (n.nodeType === 1 && /\bsearchmatch\b/.test(n.className)) frag.appendChild(el('b', '', text));
+        else frag.appendChild(document.createTextNode(text));
+      });
+      frag.appendChild(document.createTextNode(' ...'));
+      return frag;
+    }
+
+    function result(lang, item) {
+      var wrap = el('div', 's-result');
+      var a = el('a', 's-r-link');
+      a.href = pageUrl(lang, item.title);
+      a.target = '_blank';
+      a.rel = 'noopener';
+      var site = el('div', 's-r-site');
+      site.appendChild(el('span', 's-fav', 'W'));
+      var siteText = el('span', 's-r-sitetext');
+      siteText.appendChild(el('span', 's-r-name', lang === 'he' ? 'ויקיפדיה' : 'Wikipedia'));
+      var cite = el('cite', '', 'https://' + lang + '.wikipedia.org › wiki › ' + item.title);
+      cite.setAttribute('dir', 'ltr');
+      siteText.appendChild(cite);
+      site.appendChild(siteText);
+      a.appendChild(site);
+      a.appendChild(el('h3', '', item.title));
+      wrap.appendChild(a);
+      var snip = el('div', 's-r-snippet');
+      snip.appendChild(snippet(item.snippet));
+      wrap.appendChild(snip);
+      return wrap;
+    }
+
+    function noResults(q) {
+      var box = el('div', 's-empty');
+      var p = el('p');
+      p.appendChild(document.createTextNode('החיפוש שלך - '));
+      p.appendChild(el('b', '', q));
+      p.appendChild(document.createTextNode(' - לא תאם למסמכים כלשהם.'));
+      box.appendChild(p);
+      box.appendChild(el('p', '', 'הצעות:'));
+      var ul = el('ul');
+      ['ודא שכל המילים מאויתות כראוי.', 'נסה מילות מפתח אחרות.', 'נסה מילות מפתח כלליות יותר.'].forEach(function (t) {
+        ul.appendChild(el('li', '', t));
+      });
+      box.appendChild(ul);
+      return box;
+    }
+
+    function suggestion(text) {
+      var p = el('p', 's-suggest', 'האם התכוונת ל:');
+      var a = el('a', '', text);
+      a.href = spaHref(text, 0);
+      a.setAttribute('data-spa', '');
+      p.appendChild(a);
+      return p;
+    }
+
+    function pager(q, start, total) {
+      var pages = Math.min(10, Math.ceil(Math.min(total, 10000) / 10));
+      var nav = el('nav', 's-pager');
+      if (pages <= 1) return nav;
+      var cur = Math.floor(start / 10) + 1;
+      function link(text, page, cls) {
+        var a = el('a', cls || '', text);
+        a.href = spaHref(q, (page - 1) * 10);
+        a.setAttribute('data-spa', '');
+        nav.appendChild(a);
+      }
+      if (cur > 1) link('הקודם', cur - 1, 'nav');
+      for (var p = 1; p <= pages; p++) {
+        if (p === cur) nav.appendChild(el('span', 'cur', String(p)));
+        else link(String(p), p);
+      }
+      if (cur < pages) link('הבא', cur + 1, 'nav');
+      return nav;
+    }
+
+    function knowledgePanel(lang, title, my) {
+      var url = 'https://' + lang + '.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(String(title).replace(/ /g, '_'));
+      fetchJson(url, 6000).then(function (d) {
+        if (my !== token || !d || d.type !== 'standard' || !d.extract) return;
+        kpEl.textContent = '';
+        if (d.thumbnail && /^https:\/\//.test(d.thumbnail.source || '')) {
+          var imgBox = el('div', 'kp-img');
+          var img = el('img');
+          img.alt = '';
+          img.referrerPolicy = 'no-referrer';
+          img.onerror = function () { if (imgBox.parentNode) imgBox.parentNode.removeChild(imgBox); };
+          img.src = d.thumbnail.source;
+          imgBox.appendChild(img);
+          kpEl.appendChild(imgBox);
+        }
+        var body = el('div', 'kp-body');
+        body.appendChild(el('div', 'kp-title', d.title || title));
+        if (d.description) body.appendChild(el('div', 'kp-sub', d.description));
+        var desc = el('div', 'kp-desc');
+        var text = String(d.extract);
+        if (text.length > 330) text = text.slice(0, 330).replace(/\s+\S*$/, '') + '...';
+        desc.appendChild(document.createTextNode(text + ' '));
+        var src = el('a', '', lang === 'he' ? 'ויקיפדיה' : 'Wikipedia');
+        src.href = pageUrl(lang, title);
+        src.target = '_blank';
+        src.rel = 'noopener';
+        desc.appendChild(src);
+        body.appendChild(desc);
+        kpEl.appendChild(body);
+        kpEl.hidden = false;
+      }, noop);
+    }
+
+    function render(q, start, res, my) {
+      resultsEl.classList.remove('loading');
+      resultsEl.textContent = '';
+      if (!res || !res.items.length) {
+        resultsEl.appendChild(noResults(q));
+        return;
+      }
+      if (res.suggestion && start === 0 && normalize(res.suggestion) !== normalize(q)) {
+        resultsEl.appendChild(suggestion(res.suggestion));
+      }
+      res.items.forEach(function (item) { resultsEl.appendChild(result(res.lang, item)); });
+      resultsEl.appendChild(pager(q, start, res.total));
+      if (start === 0) knowledgePanel(res.lang, res.items[0].title, my);
+    }
+
+    function load(q, start) {
+      var my = ++token;
+      resultsEl.textContent = '';
+      resultsEl.classList.add('loading');
+      kpEl.hidden = true;
+      kpEl.textContent = '';
+      wikiSearch('he', q, start)
+        .then(function (res) {
+          if (res.items.length) return res;
+          return wikiSearch('en', q, start).catch(function () { return res; });
+        })
+        .then(function (res) { if (my === token) render(q, start, res, my); },
+              function () { if (my === token) render(q, start, null, my); });
+    }
+
+    return { load: load };
+  })();
+
+  // ---- account card (Noa) ----
+
+  function setAccount(open, anchor) {
+    if (open && anchor) {
+      var r = anchor.getBoundingClientRect();
+      account.style.top = Math.round(r.bottom + (window.pageYOffset || 0) + 6) + 'px';
+    }
     account.hidden = !open;
-    avatarBtn.setAttribute('aria-expanded', String(open));
+    avatars.forEach(function (b) { b.setAttribute('aria-expanded', String(open && b === anchor)); });
   }
-  avatarBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    setAccount(account.hidden);
+  avatars.forEach(function (b) {
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setAccount(account.hidden, b);
+    });
   });
   $('g-account-close').addEventListener('click', function () { setAccount(false); });
   Array.prototype.forEach.call(document.querySelectorAll('[data-account-close]'), function (b) {
@@ -681,5 +980,9 @@
   document.addEventListener('visibilitychange', function () { if (!document.hidden) checkConnection(); });
   window.addEventListener('pageshow', function (e) { if (e.persisted) connect(); }); // back/forward cache
 
+  route();
+  try {
+    if (!homePage.hidden && window.matchMedia && window.matchMedia('(pointer: fine)').matches) homeInput.focus();
+  } catch (e) {}
   connect();
 })();
