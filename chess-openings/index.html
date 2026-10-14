@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: a club-tournament table. Lines list on the right, the board in the middle, the score sheet on the left. */
+/* Layout: a club-tournament table. Training plan and lines on the right, the board in the middle, the coach's notes on the left. */
 :root {
   --bg: #e9eee8;
   --surface: #f9fbf8;
@@ -26,9 +26,10 @@
   --sq-light: #e7e5cd;
   --sq-dark: #789862;
   --sq-hl: rgba(246, 210, 70, .6);
-  --sq-sel: rgba(255, 216, 79, .7);
-  --arrow: rgba(26, 110, 64, .78);
-  --arrow-hint: rgba(214, 140, 0, .9);
+  --sq-sel: rgba(255, 216, 79, .75);
+  --arrow: rgba(26, 110, 64, .8);
+  --arrow-hint: rgba(214, 140, 0, .92);
+  --scrim: rgba(10, 20, 14, .45);
   --shadow: 0 1px 2px rgba(20, 40, 28, .08), 0 8px 24px rgba(20, 40, 28, .08);
   --f-display: "Frank Ruhl Libre", "David Libre", "Times New Roman", serif;
   --f-body: "IBM Plex Sans Hebrew", "Assistant", "Segoe UI", Arial, sans-serif;
@@ -38,7 +39,7 @@
   :root:not([data-theme="light"]) {
     --bg: #111814; --surface: #18211c; --raised: #1f2a24; --ink: #e5ece7; --muted: #9db0a4; --line: #2e3c34;
     --accent: #e3b04b; --accent-soft: #3a3020; --good: #63c48c; --good-soft: #193526; --bad: #f07b72; --bad-soft: #3d1f1d;
-    --sq-light: #d9d7bd; --sq-dark: #6a8a55; --arrow: rgba(40, 150, 90, .85);
+    --sq-light: #d9d7bd; --sq-dark: #6a8a55; --arrow: rgba(40, 150, 90, .85); --scrim: rgba(0, 0, 0, .6);
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
     color-scheme: dark;
   }
@@ -46,41 +47,55 @@
 :root[data-theme="dark"] {
   --bg: #111814; --surface: #18211c; --raised: #1f2a24; --ink: #e5ece7; --muted: #9db0a4; --line: #2e3c34;
   --accent: #e3b04b; --accent-soft: #3a3020; --good: #63c48c; --good-soft: #193526; --bad: #f07b72; --bad-soft: #3d1f1d;
-  --sq-light: #d9d7bd; --sq-dark: #6a8a55; --arrow: rgba(40, 150, 90, .85);
+  --sq-light: #d9d7bd; --sq-dark: #6a8a55; --arrow: rgba(40, 150, 90, .85); --scrim: rgba(0, 0, 0, .6);
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 0 32px;
 }
 button { font: inherit; color: inherit; cursor: pointer; }
-button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:focus-visible, [tabindex]:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .san { font-family: var(--f-mono); font-weight: 500; font-size: .92em; white-space: nowrap; unicode-bidi: isolate; }
 
 /* Header */
-.top { max-width: 1440px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding-block: 18px 14px; }
-.brand { display: flex; flex-direction: column; gap: 0; margin-inline-end: auto; }
+.top { max-width: 1440px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding-block: 18px 14px; }
+.brand { margin-inline-end: auto; min-width: 0; }
 .brand h1 { font-family: var(--f-display); font-weight: 900; font-size: 30px; line-height: 1.1; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
 .brand p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.tab {
-  display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 16px; border-radius: 10px; border: 1px solid var(--line);
-  background: var(--surface); text-align: start; min-width: 0;
-}
+.tab { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); text-align: start; min-width: 0; }
 .tab .ico { width: 34px; height: 34px; background-size: 100%; flex: none; }
 .tab b { display: block; font-family: var(--f-display); font-size: 18px; font-weight: 700; line-height: 1.2; }
 .tab small { display: block; color: var(--muted); font-size: 12.5px; }
 .tab[aria-pressed="true"] { border-color: var(--ink); background: var(--raised); box-shadow: var(--shadow); }
+.tools { display: flex; gap: 6px; }
+.tbtn { height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; }
+.tbtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tbtn:hover { background: var(--raised); }
 
 /* Main grid */
-.wrap { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 310px minmax(0, 1fr) 370px; gap: 20px; align-items: start; }
+.wrap { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 320px minmax(0, 1fr) 370px; gap: 20px; align-items: start; }
 .side, .panel { min-width: 0; }
-.side { position: sticky; top: env(safe-area-inset-top, 0px); max-height: 100vh; overflow-y: auto; padding-bottom: 12px; scrollbar-width: thin; }
+.side > *, .panel > * { flex-shrink: 0; }
+.side { position: sticky; top: env(safe-area-inset-top, 0px); max-height: 100vh; overflow-y: auto; padding-bottom: 12px; scrollbar-width: thin; display: flex; flex-direction: column; gap: 14px; }
 
-/* Sidebar */
+/* Today card */
+.today { background: var(--ink); color: var(--bg); border-radius: 12px; padding: 14px 16px; }
+.today h2 { margin: 0; font-family: var(--f-display); font-size: 20px; font-weight: 700; }
+.trow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; text-align: center; }
+.trow b { display: block; font: 600 24px/1.1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.trow small { display: block; font-size: 12px; opacity: .75; }
+.trow .hot b { color: var(--accent-soft); }
+.today .go { margin-top: 12px; width: 100%; padding: 10px 12px; border-radius: 9px; border: 0; background: var(--accent-soft); color: var(--ink); font-weight: 600; font-size: 14.5px; line-height: 1.35; }
+.today .go:hover { filter: brightness(1.04); }
+.today .why { margin: 8px 0 0; font-size: 12.5px; opacity: .75; line-height: 1.45; }
+
+/* About + list */
 .about { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
 .about h2 { margin: 0; font-family: var(--f-display); font-size: 21px; }
 .about .mv { display: inline-block; margin-top: 2px; color: var(--accent); }
@@ -89,24 +104,39 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .about summary { cursor: pointer; font-weight: 600; font-size: 14px; }
 .about ul { margin: 6px 0 0; padding-inline-start: 18px; font-size: 14px; display: grid; gap: 4px; }
 .prog { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
-.bar i { display: block; height: 100%; background: var(--good); border-radius: 3px; transition: width .3s; }
-.rand { margin-top: 10px; width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--accent); background: transparent; color: var(--accent); font-weight: 600; }
-.rand:hover { background: var(--accent-soft); }
-.group { margin-top: 18px; }
+.bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; background: var(--good); transition: width .3s; }
+.bar i.part { background: var(--accent); opacity: .7; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--surface); }
+.seg button { flex: 1; border: 0; background: transparent; padding: 6px 10px; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .group h3 { margin: 0 4px 2px; font-size: 12px; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
 .group .gb { margin: 0 4px 6px; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
-.ln {
-  width: 100%; display: grid; grid-template-columns: 18px minmax(0,1fr) auto; align-items: center; gap: 8px; padding: 7px 8px;
-  border: 0; border-radius: 8px; background: transparent; text-align: start; font-size: 14px; line-height: 1.35;
-}
+.ln { width: 100%; display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 8px; padding: 7px 8px; border: 0; border-radius: 8px; background: transparent; text-align: start; font-size: 14px; line-height: 1.35; }
 .ln:hover { background: var(--surface); }
-.ln[aria-current="true"] { background: var(--raised); box-shadow: inset 3px 0 0 var(--accent), var(--shadow); }
-.ln .st { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 10px; }
-.ln .st.done { border-color: var(--good); color: var(--good); }
-.ln .st.clean { background: var(--good); border-color: var(--good); color: var(--surface); }
+.ln[aria-current="true"] { background: var(--raised); box-shadow: inset -3px 0 0 var(--accent), var(--shadow); }
 .ln .eco { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
-.ln .tag { display: inline-block; margin-inline-start: 6px; font-size: 11px; padding: 0 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-weight: 600; vertical-align: 1px; }
+.tag { display: inline-block; margin-inline-start: 6px; font-size: 11px; padding: 0 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-weight: 600; vertical-align: 1px; white-space: nowrap; }
+.tag.due { background: var(--accent); color: var(--surface); }
+.pips { display: inline-flex; gap: 2px; direction: ltr; }
+.pips i { width: 6px; height: 10px; border-radius: 2px; background: var(--line); }
+.pips i.on { background: var(--good); }
+.pips i.on.m { background: var(--accent); }
+
+/* Map */
+.map { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 10px 12px 12px; }
+.map > p { margin: 0 4px 8px; font-size: 13px; color: var(--muted); line-height: 1.45; }
+.tree { list-style: none; margin: 0; padding: 0; }
+.tree .tree { padding-inline-start: 10px; margin-inline-start: 6px; border-inline-start: 2px solid var(--line); }
+.tree li { padding-block: 3px; }
+.tn { direction: ltr; text-align: right; line-height: 1.9; }
+.tm { border: 0; background: transparent; padding: 0 3px; border-radius: 4px; font: 500 13px var(--f-mono); color: var(--ink); }
+.tm:hover { background: var(--bg); }
+.tm.on { background: var(--accent-soft); color: var(--accent); }
+.tm.cur { background: var(--ink); color: var(--bg); }
+.tl { display: block; width: 100%; text-align: start; border: 0; background: transparent; padding: 1px 4px; margin: 1px 0; border-radius: 5px; font-size: 13px; font-weight: 600; color: var(--accent); }
+.tl:hover { background: var(--accent-soft); }
+.tl[aria-current="true"] { background: var(--accent); color: var(--surface); }
 
 /* Board column */
 .stage { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
@@ -114,24 +144,37 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .lhead .crumb { font-size: 12.5px; color: var(--muted); }
 .lhead h2 { margin: 0; font-family: var(--f-display); font-size: 26px; line-height: 1.2; font-weight: 700; text-wrap: balance; }
 .lhead p { margin: 2px 0 0; color: var(--muted); font-size: 14.5px; }
+.lstat { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.sessionbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-radius: 10px; background: var(--accent-soft); color: var(--ink); font-size: 14px; margin-bottom: 6px; }
+.sessionbar b { color: var(--accent); }
+.sessionbar button { margin-inline-start: auto; border: 1px solid var(--accent); background: transparent; color: var(--accent); border-radius: 7px; padding: 2px 10px; font-size: 13px; font-weight: 600; }
 .drawer-btn { display: none; align-self: flex-start; margin-bottom: 6px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 14px; }
-.modes { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
-.modes button { border: 0; background: transparent; padding: 7px 18px; font-weight: 600; font-size: 14px; color: var(--muted); }
-.modes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.toolbar { width: min(100%, 640px); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.board-wrap { width: min(100%, 640px, calc(100vh - 300px)); min-width: min(100%, 300px); position: relative; }
-.board {
-  direction: ltr; display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; aspect-ratio: 1; max-width: 100%;
-  border-radius: 6px; overflow: hidden; box-shadow: var(--shadow), 0 0 0 1px var(--line); touch-action: none; user-select: none; -webkit-user-select: none;
-}
+.steps { width: min(100%, 640px); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.steps button { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); text-align: start; min-width: 0; position: relative; }
+.steps b { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 600 12px var(--f-mono); border: 1.5px solid var(--line); color: var(--muted); }
+.steps span { min-width: 0; font-weight: 600; font-size: 14px; line-height: 1.25; }
+.steps small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.steps button.done b { background: var(--good); border-color: var(--good); color: var(--surface); }
+.steps button.rec { border-color: var(--accent); }
+.steps button.rec::after { content: "הבא"; position: absolute; top: -8px; left: 8px; font-size: 10.5px; font-weight: 600; background: var(--accent); color: var(--surface); padding: 0 6px; border-radius: 4px; line-height: 16px; }
+.steps button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.steps button[aria-pressed="true"] small { color: var(--bg); opacity: .75; }
+.steps button[aria-pressed="true"] b { border-color: var(--bg); color: var(--bg); }
+.steps button[aria-pressed="true"].done b { background: var(--good); border-color: var(--good); color: var(--surface); }
+
+.board-wrap { width: min(100%, 620px, calc(100vh - 330px)); min-width: min(100%, 300px); position: relative; }
+.board { direction: ltr; display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; aspect-ratio: 1; max-width: 100%; border-radius: 6px; overflow: hidden; box-shadow: var(--shadow), 0 0 0 1px var(--line); touch-action: none; user-select: none; -webkit-user-select: none; }
 .board.shake { animation: shake .32s; }
+.board.glow { box-shadow: var(--shadow), 0 0 0 4px var(--good); transition: box-shadow .3s; }
 @keyframes shake { 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
 .sq { position: relative; background: var(--sq-light); }
 .sq.d { background: var(--sq-dark); }
 .sq.hl::before, .sq.sel::before, .sq.bad::before { content: ""; position: absolute; inset: 0; background: var(--sq-hl); }
 .sq.sel::before { background: var(--sq-sel); }
 .sq.bad::before { background: rgba(220, 50, 40, .55); }
+.sq.hint::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; border: 4px solid var(--arrow-hint); z-index: 3; animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(.88); opacity: .6; } }
 .sq.chk { background-image: radial-gradient(circle, rgba(255,40,30,.95) 0%, rgba(230,30,20,.55) 40%, rgba(200,0,0,0) 72%); }
 .sq .pc { position: absolute; inset: 0; background-size: 100%; z-index: 2; }
 .sq.dragfrom .pc { opacity: .3; }
@@ -144,69 +187,108 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .arrows { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
 .ghost { position: fixed; z-index: 50; pointer-events: none; background-size: 100%; transform: translate(-50%, -50%); filter: drop-shadow(0 6px 8px rgba(0,0,0,.3)); }
 
-.nav { display: flex; gap: 6px; direction: ltr; }
-.nav button, .tool {
-  min-width: 44px; height: 40px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; font-size: 15px;
-}
+.toolbar { width: min(100%, 620px); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.nav { display: flex; gap: 6px; direction: ltr; align-items: center; }
+.nav button, .tool { min-width: 44px; height: 40px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; font-size: 15px; }
 .nav button:hover:not(:disabled), .tool:hover { background: var(--raised); }
 .nav button:disabled { opacity: .35; cursor: default; }
 .nav svg, .tool svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.counter { font: 500 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; min-width: 70px; text-align: center; direction: ltr; }
+.counter { font: 500 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; min-width: 64px; text-align: center; }
+.kbd { font-size: 12.5px; color: var(--muted); }
+.kbd kbd { font: 500 11px var(--f-mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--raised); }
 
 /* Panel */
 .panel { display: flex; flex-direction: column; gap: 14px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
 .card h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
-.note { min-height: 128px; }
+.hook { border-color: var(--accent); background: var(--accent-soft); }
+.hook h4 { color: var(--accent); }
+.hook .h { font-family: var(--f-display); font-size: 19px; font-weight: 700; line-height: 1.45; }
+.hook .s { margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.note { min-height: 120px; }
 .note .mvl { font: 600 20px var(--f-mono); direction: ltr; text-align: right; }
 .note .mvl .nag { color: var(--accent); }
 .note .txt { margin: 6px 0 0; font-size: 15.5px; line-height: 1.65; }
 .note .txt.empty { color: var(--muted); }
+.note .branch { display: inline-block; margin-top: 8px; font-size: 12.5px; font-weight: 600; color: var(--accent); }
 .ideas ul { margin: 0; padding-inline-start: 18px; display: grid; gap: 5px; font-size: 14.5px; }
-.status { border-width: 1px; }
-.status.ok { border-color: var(--good); background: var(--good-soft); }
+.status.ok, .status.win { border-color: var(--good); background: var(--good-soft); }
 .status.no { border-color: var(--bad); background: var(--bad-soft); }
-.status.win { border-color: var(--good); background: var(--good-soft); }
 .status .big { font-family: var(--f-display); font-size: 21px; font-weight: 700; line-height: 1.3; }
 .status .sub { margin-top: 4px; font-size: 14.5px; }
-.status .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.status .pre { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--raised); font-size: 14.5px; line-height: 1.55; }
+.status .pre b { display: block; font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .04em; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); font-weight: 600; font-size: 14px; }
 .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .btn:disabled { opacity: .45; cursor: default; }
-.stats { display: flex; gap: 18px; margin-top: 10px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stats { display: flex; gap: 18px; margin-top: 10px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; flex-wrap: wrap; }
 .stats b { color: var(--ink); font-size: 15px; }
+.skipchk { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+.skipchk input { width: 16px; height: 16px; accent-color: var(--accent); }
+.next-due { margin-top: 10px; font-size: 14px; }
+.ladder { display: flex; gap: 4px; margin-top: 10px; direction: ltr; justify-content: flex-end; flex-wrap: wrap; }
+.ladder span { font: 500 11.5px var(--f-mono); padding: 2px 7px; border-radius: 5px; background: var(--raised); color: var(--muted); border: 1px solid var(--line); }
+.ladder span.on { background: var(--good); color: var(--surface); border-color: var(--good); }
+
+/* Quiz */
+.q .qn { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.q .qt { font-family: var(--f-display); font-size: 20px; font-weight: 700; line-height: 1.35; margin-top: 2px; }
+.opts { display: grid; gap: 8px; margin-top: 12px; }
+.opts.mv { grid-template-columns: 1fr 1fr; }
+.opt { padding: 10px 12px; border-radius: 9px; border: 1.5px solid var(--line); background: var(--raised); text-align: start; font-size: 14.5px; line-height: 1.45; }
+.opts.mv .opt { text-align: center; font: 600 17px var(--f-mono); direction: ltr; }
+.opt:hover:not(:disabled) { border-color: var(--ink); }
+.opt:disabled { cursor: default; }
+.opt.right { border-color: var(--good); background: var(--good-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.q .exp { margin-top: 12px; font-size: 14.5px; line-height: 1.6; }
+.qbar { display: flex; gap: 4px; margin-top: 8px; }
+.qbar i { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+.qbar i.r { background: var(--good); } .qbar i.w { background: var(--bad); } .qbar i.c { background: var(--ink); }
 
 /* Score sheet */
 .sheet { padding: 0; overflow: hidden; }
 .sheet h4 { padding: 12px 16px 0; }
-.sheet-body { position: relative; max-height: 340px; overflow-y: auto; padding: 4px 8px 10px; direction: ltr; }
+.sheet-body { position: relative; max-height: 320px; overflow-y: auto; padding: 4px 8px 10px; direction: ltr; }
 .sheet table { width: 100%; border-collapse: collapse; font: 500 14px var(--f-mono); font-variant-numeric: tabular-nums; }
 .sheet td { padding: 2px 6px; height: 28px; }
 .sheet td.n { width: 34px; color: var(--muted); text-align: right; border-right: 1px solid var(--line); }
+.sheet tr.br td { border-top: 1.5px dashed var(--accent); }
 .sheet .m { display: inline-block; padding: 1px 6px; border-radius: 5px; cursor: pointer; border: 0; background: transparent; font: inherit; }
 .sheet .m:hover { background: var(--bg); }
 .sheet .m.cur { background: var(--ink); color: var(--bg); }
 .sheet .m.has::after { content: "•"; color: var(--accent); margin-left: 3px; }
-.sheet .m.cur.has::after { color: var(--accent-soft); }
 .sheet .m .nag { color: var(--accent); }
 .sheet .m.cur .nag { color: inherit; }
 .sheet .m.future { color: var(--muted); opacity: .55; }
 .empty-sheet { padding: 10px 16px 14px; color: var(--muted); font-size: 14px; direction: rtl; }
-.kbd { font-size: 12.5px; color: var(--muted); }
-.kbd kbd { font: 500 11px var(--f-mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--raised); }
+.legend { padding: 0 16px 12px; font-size: 12px; color: var(--muted); direction: rtl; }
+
+/* Intro dialog */
+.modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: var(--scrim);
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal .box { width: min(620px, 100%); max-height: 100%; overflow-y: auto; background: var(--surface); border-radius: 16px; padding: 22px 22px 18px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.modal h2 { margin: 0; font-family: var(--f-display); font-size: 27px; line-height: 1.2; }
+.modal .lead { margin: 6px 0 0; color: var(--muted); }
+.modal ol { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 12px; }
+.modal li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: start; }
+.modal li > b { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--bg); font: 600 15px var(--f-mono); }
+.modal li strong { display: block; font-size: 15.5px; }
+.modal li span { display: block; font-size: 14px; color: var(--muted); line-height: 1.5; }
+.modal .extra { margin-top: 14px; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); font-size: 14px; line-height: 1.55; }
+.modal .row { justify-content: flex-start; }
 
 .scrim { display: none; }
 .err { max-width: 640px; margin: 40px auto; padding: 16px; border: 1px solid var(--bad); background: var(--bad-soft); border-radius: 12px; }
 
 @media (max-width: 1240px) {
   .wrap { grid-template-columns: minmax(0, 1fr) 340px; }
-  .side {
-    position: fixed; top: 0; bottom: 0; right: 0; width: min(360px, 88vw); max-height: none; z-index: 40; background: var(--bg);
+  .side { position: fixed; top: 0; bottom: 0; right: 0; width: min(360px, 88vw); max-height: none; z-index: 40; background: var(--bg);
     padding: calc(16px + env(safe-area-inset-top, 0px)) 14px calc(16px + env(safe-area-inset-bottom, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px));
-    box-shadow: -8px 0 30px rgba(0,0,0,.25); transform: translateX(105%); transition: transform .22s ease; visibility: hidden;
-  }
+    box-shadow: -8px 0 30px rgba(0,0,0,.25); transform: translateX(105%); transition: transform .22s ease; visibility: hidden; }
   body.drawer .side { transform: none; visibility: visible; }
-  body.drawer .scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 39; }
+  body.drawer .scrim { display: block; position: fixed; inset: 0; background: var(--scrim); z-index: 39; }
   .drawer-btn { display: inline-flex; gap: 6px; align-items: center; }
 }
 @media (max-width: 860px) {
@@ -217,10 +299,13 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
   .lhead h2 { font-size: 22px; }
   .note { min-height: 0; }
   .kbd { display: none; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tbtn .lbl { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .side, .bar i { transition: none; }
   .board.shake { animation: none; }
+  .sq.hint::after { animation: none; }
 }
 /* Chess pieces: Colin M.L. Burnett (cburnett), via lichess chessground */
 .pc-wp{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PHBhdGggZD0iTTIyLjUgOWMtMi4yMSAwLTQgMS43OS00IDQgMCAuODkuMjkgMS43MS43OCAyLjM4QzE3LjMzIDE2LjUgMTYgMTguNTkgMTYgMjFjMCAyLjAzLjk0IDMuODQgMi40MSA1LjAzLTMgMS4wNi03LjQxIDUuNTUtNy40MSAxMy40N2gyM2MwLTcuOTItNC40MS0xMi40MS03LjQxLTEzLjQ3IDEuNDctMS4xOSAyLjQxLTMgMi40MS01LjAzIDAtMi40MS0xLjMzLTQuNS0zLjI4LTUuNjIuNDktLjY3Ljc4LTEuNDkuNzgtMi4zOCAwLTIuMjEtMS43OS00LTQtNHoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==")}
@@ -244,54 +329,76 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 <header class="top">
   <div class="brand">
     <h1>קארו-קאן והאיטלקית</h1>
-    <p>ספריית וריאציות עם לוח, הסברים ותרגול. כל הקווים נבדקו במנוע.</p>
+    <p>לומדים קו, מתרגלים אותו, והאתר מחזיר אותו בדיוק כשמתחילים לשכוח.</p>
   </div>
   <nav class="tabs" id="tabs" aria-label="בחירת פתיחה"></nav>
+  <div class="tools">
+    <button class="tbtn" type="button" id="soundBtn" aria-pressed="true"></button>
+    <button class="tbtn" type="button" id="helpBtn">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17.5v.01"/></svg>
+      <span class="lbl">איך לומדים כאן</span>
+    </button>
+  </div>
 </header>
 
 <div class="wrap">
-  <aside class="side" id="side" aria-label="וריאציות"></aside>
+  <aside class="side" id="side" aria-label="תוכנית אימון וקווים"></aside>
 
   <main class="stage">
     <div class="lhead">
+      <div class="sessionbar" id="sessionBar" hidden></div>
       <button class="drawer-btn" id="drawerBtn" type="button" aria-controls="side">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-        כל הווריאציות
+        התוכנית וכל הקווים
       </button>
       <div class="crumb" id="crumb"></div>
       <h2 id="lineName"></h2>
       <p id="lineSum"></p>
+      <div class="lstat" id="lineStat"></div>
     </div>
-    <div class="toolbar">
-      <div class="modes" role="group" aria-label="מצב">
-        <button type="button" id="mStudy" aria-pressed="true">לימוד</button>
-        <button type="button" id="mPractice" aria-pressed="false">תרגול</button>
-      </div>
-      <div style="display:flex;gap:6px">
-        <button class="tool" type="button" id="flipBtn" title="סיבוב הלוח" aria-label="סיבוב הלוח">
-          <svg viewBox="0 0 24 24"><path d="M7 4v14M7 18l-3-3M7 18l3-3M17 20V6M17 6l-3 3M17 6l3 3"/></svg>
-        </button>
-      </div>
+    <div class="steps" id="steps" role="group" aria-label="שלבי הלימוד">
+      <button type="button" data-m="study"><b>1</b><span>צפייה<small>עם הסברים</small></span></button>
+      <button type="button" data-m="guided"><b>2</b><span>תרגול מודרך<small>משחקים לפי החץ</small></span></button>
+      <button type="button" data-m="recall"><b>3</b><span>מהזיכרון<small>בלי חצים</small></span></button>
+      <button type="button" data-m="quiz"><b>?</b><span>חידון<small>מה משחקים ולמה</small></span></button>
     </div>
     <div class="board-wrap" id="boardWrap">
       <div class="board" id="board" role="grid" aria-label="לוח שחמט"></div>
       <svg class="arrows" id="arrows" viewBox="0 0 800 800" aria-hidden="true"></svg>
     </div>
-    <div class="toolbar" id="navBar">
-      <div class="nav" role="group" aria-label="ניווט במהלכים">
+    <div class="toolbar">
+      <div class="nav" id="navBar" role="group" aria-label="ניווט במהלכים">
         <button type="button" id="nStart" aria-label="להתחלה"><svg viewBox="0 0 24 24"><path d="M6 5v14M18 6l-8 6 8 6"/></svg></button>
         <button type="button" id="nPrev" aria-label="מהלך קודם"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
         <span class="counter" id="counter"></span>
         <button type="button" id="nNext" aria-label="מהלך הבא"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
         <button type="button" id="nEnd" aria-label="לסוף"><svg viewBox="0 0 24 24"><path d="M18 5v14M6 6l8 6-8 6"/></svg></button>
       </div>
-      <span class="kbd"><kbd>←</kbd> <kbd>→</kbd> במקלדת</span>
+      <span class="kbd" id="kbdHint"><kbd>←</kbd> <kbd>→</kbd> במקלדת</span>
+      <button class="tool" type="button" id="flipBtn" title="סיבוב הלוח" aria-label="סיבוב הלוח">
+        <svg viewBox="0 0 24 24"><path d="M7 4v14M7 18l-3-3M7 18l3-3M17 20V6M17 6l-3 3M17 6l3 3"/></svg>
+      </button>
     </div>
   </main>
 
   <section class="panel" id="panel" aria-live="polite"></section>
 </div>
 <div class="scrim" id="scrim"></div>
+
+<div class="modal" id="intro" role="dialog" aria-modal="true" aria-labelledby="introTitle" hidden>
+  <div class="box">
+    <h2 id="introTitle">איך לומדים פתיחה כך שהיא תישאר בראש</h2>
+    <p class="lead">כל קו עובר ארבעה שלבים. כל שלב מבוסס על שיטה שמחקרי זיכרון מראים שהיא עובדת.</p>
+    <ol>
+      <li><b>1</b><div><strong>צפייה עם הסבר</strong><span>עוברים על הקו מהלך אחרי מהלך וקוראים למה כל מהלך משוחק. כשמבינים את הסיבה, זוכרים את המהלך הרבה יותר טוב. לכל קו יש גם משפט קצר לזכירה.</span></div></li>
+      <li><b>2</b><div><strong>תרגול מודרך</strong><span>משחקים את המהלכים בעצמכם, עם חץ שמראה את הדרך. כך הידיים לומדות את הקו, ולא רק העיניים.</span></div></li>
+      <li><b>3</b><div><strong>שליפה מהזיכרון</strong><span>אותו קו, בלי חצים. הניסיון להיזכר הוא מה שמקבע את הזיכרון. נתקעתם? הרמז הראשון מראה רק איזה כלי זז, והרמז השני מראה חץ.</span></div></li>
+      <li><b>4</b><div><strong>חזרה מרווחת</strong><span>קו שנלמד חוזר לחזרה אחרי יום, 3 ימים, שבוע, שבועיים, חודש וחודשיים. כל חזרה מוצלחת מרחיקה את הבאה. טעיתם? הקו חוזר מחר.</span></div></li>
+    </ol>
+    <div class="extra">בנוסף: <b>מפת הפתיחה</b> מראה איפה כל קו נפרד מהאחרים, <b>החידון</b> שואל גם מה משחקים וגם למה, וכרטיס <b>התוכנית להיום</b> אומר לכם מה לעשות עכשיו. מספיקות 10 דקות ביום.</div>
+    <div class="row"><button type="button" class="btn primary" id="introGo">הבנתי, בואו נתחיל</button></div>
+  </div>
+</div>
 
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
@@ -661,6 +768,52 @@ const OPENINGS = [
 }
 ];
 
+const HOOKS = {
+  "adv-short": "שרשרת רגלים? מכים בבסיס שלה עם ...c5. והרץ יוצא ל-f5 לפני שהדלת (...e6) נסגרת.",
+  "adv-tal": "לבן תוקף באגף, שחור תוקף באמצע: ...c5 מיד, ו-...h5 בזמן.",
+  "adv-h4": "h4? עונים h5. רגלי מול רגלי, והרץ נשאר בבית שלו.",
+  "adv-c5": "לא מחכים: ...c5 מיד, ואז הפרש מטייל e7-f5.",
+  "cls-main": "h6 נותן לרץ בית ב-h7, ...Nd7 שומר על e5, וב-d3 מחליפים את הרצים.",
+  "cls-noh4": "אין h4? אין לחץ. מחליפים ב-d3, מפתחים ומצריחים.",
+  "cls-n1e2": "הפרש הלבן ברח ל-f4? המרכז ריק: ...e5!",
+  "kar-ng5": "Ng5? קודם ...e6, אחר כך ...Bd6, ורק אז ...h6. ...h6 מוקדם מדי = Nxe6.",
+  "kar-bc4": "רץ ב-c4? מגרשים אותו עם ...Nb6, ואת הפרש עם ...h6.",
+  "kar-nf3": "...Nd7 קיים בשביל רגע אחד: Nxf6+ Nxf6, בלי רגלים כפולים.",
+  "bl-gxf6": "רגלים כפולים תמורת קו g פתוח, ואז ...h5-h4.",
+  "bl-exf6": "exf6 = פיתוח מהיר: ...Bd6, הצרחה, ...Re8+.",
+  "ex-bd3": "עמדה סימטרית: ...Bg4 לפני ...e6, ואחר כך ...b5-b4 (התקפת מיעוט).",
+  "pn-e6": "מול רגלי מבודד: חוסמים ב-d5 ומחליפים כלים.",
+  "pn-nc6": "לבן נעל עם c5? ...Ne4 מחליף, ...b6 שובר.",
+  "pn-g6": "רץ ב-g7, ואת הרגלי ב-d5 מחזירים עם ...Nb6.",
+  "side-2kn": "שני פרשים? ...Bg4 ולוקחים על f3. אחר כך ...d4 נועל.",
+  "side-fantasy": "f3 = מלך חשוף. לוקחים ב-e4 ומכים עם ...e5.",
+  "side-c4": "2.c4: לא ממהרים. קודם ...Nf6, אחר כך ...Nxd5.",
+  "side-kia": "לבן סוגר את המשחק? שחור לוקח את המרכז: ...d5 ו-...e5.",
+  "trap-smother": "מלכה לבנה ב-e2 = הרגלי ב-e7 מוצמד. אסור לשחק כאן ...Ngf6.",
+  "trap-deepblue": "...e6, ...Bd6, ורק אז ...h6. קספרוב הפסיד בגלל סדר המהלכים.",
+  "trap-2kn": "מלכה לבנה על קו e? לא חוסמים למלך את d7.",
+  "gp-bd2": "c3 ואז d4 = מרכז. אחרי ...d5 משחקים Qb3 על d5 ועל b7.",
+  "gp-moller": "מקריבים את e4, ואז d5! תוקף את הפרש. הצריח לוקח בחזרה ב-e4.",
+  "gp-greco": "מי שחומד את הצריח ב-a1 מקבל מט ב-f7.",
+  "gp-e5": "e5 מגרש את הפרש, Bb5 עונה לרץ, ואז לוקחים ב-d4.",
+  "pz-a4": "בונים לאט: h3, a4, Re1, והפרש מסתובב d2-f1-g3.",
+  "pz-bb3": "Bb3 מראש: הרץ בטוח מ-...Na5 ועדיין מכוון ל-f7.",
+  "pz-pin": "הצמדה עם ...Bh5? Nxe5! אם הוא לוקח את המלכה: Bxf7+ ו-Nd5 מט.",
+  "ev-lasker": "b4 מקריב, c3 ו-d4 עם טמפו. אם שחור מחזיר את הרגלי, מחליפים מלכות ונשארים עם פיתוח טוב.",
+  "ev-evergreen": "פיתוח מנצח חומר: Rad1! ואז Qxd7+!!",
+  "ev-be7": "...Be7? d4, e5 ומלכה ל-h4: התקפה באגף המלך.",
+  "ev-declined": "לא לקח? a4-a5 רודף אחרי הרץ, ו-Nd5 תופס את המרכז.",
+  "tk-main": "Ng5 על f7. אחרי ...Na5: Bb5+ ואז Be2. שומרים על הרגלי.",
+  "tk-fried": "...Nxd5? Nxf7! ואז Qf3+ ו-Nc3: המלך יוצא לטייל.",
+  "tk-traxler": "...Bc5? לא נלחצים: Bxf7+ בטוח, ונשארים עם רגלי יותר.",
+  "tk-d3": "d3 = איטלקית שקטה: c3, Re1, Bc2 והפרש f1-g3.",
+  "tk-d4": "d4 והצרחה, Re1, ואז Bxd5 ו-Nc3 עם טמפו על המלכה.",
+  "oth-hungarian": "...Be7 פסיבי? d4, d5, c4: שטח בחינם.",
+  "oth-bs": "3...Nd4: לא לוקחים ב-e5!",
+  "oth-bs-correct": "Nxd4 והצרחה. אם ...Bc5: Bxf7+ ו-Qh5+ זוכים ברץ.",
+  "oth-paris": "...d6 פסיבי: d4, Nxd4 ושליטה ב-d5 וב-f5."
+};
+
 function parsePgn(text) {
   const out = []; let pre = "";
   const re = /\{([^}]*)\}|(\d+\.(?:\.\.)?)|([^\s{}]+)/g; let m;
@@ -676,31 +829,70 @@ function parsePgn(text) {
   "use strict";
   const $ = (id) => document.getElementById(id);
   const FILES = "abcdefgh";
-    const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduceMotion = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   if (typeof Chess === "undefined") {
     document.querySelector(".wrap").innerHTML = '<div class="err">ספריית השחמט לא נטענה. בדקו את החיבור לאינטרנט ורעננו את הדף.</div>';
     return;
   }
 
-  // ---------- storage ----------
+  // ---------- storage & spaced repetition ----------
   function load(key, def) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch (e) { return def; } }
   function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
-  let progress = load("oo-progress", {});
+  function today() { const d = new Date(); return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000); }
+  const INTERVALS = [0, 1, 3, 7, 14, 30, 60]; // days until the next review, by box
+  const MASTER_BOX = 4;
+
+  let P = load("oo-p2", null);
+  if (!P) {
+    P = {};
+    const old = load("oo-progress", {});
+    for (const id in old) if (old[id] && old[id].done) P[id] = { seen: true, guided: true, learned: !!old[id].clean, box: old[id].clean ? 1 : 0, due: old[id].clean ? today() : null, best: old[id].best, reps: 1, quiz: null };
+  }
+  const G = Object.assign({ streak: 0, last: null, todayN: 0, sound: true, skip: false, intro: false, view: "list" }, load("oo-g", {}));
+  function rec(id) { return P[id] || (P[id] = { seen: false, guided: false, learned: false, box: 0, due: null, best: null, reps: 0, quiz: null }); }
+  function persist() { save("oo-p2", P); save("oo-g", G); }
+  function bumpDay() {
+    const t = today();
+    if (G.last === t) G.todayN++;
+    else { G.streak = G.last === t - 1 ? G.streak + 1 : 1; G.last = t; G.todayN = 1; }
+  }
+  function streakNow() { const t = today(); return G.last === t || G.last === t - 1 ? G.streak : 0; }
+  function isDue(id) { const r = P[id]; return !!(r && r.learned && r.due != null && r.due <= today()); }
+  function stage(id) { const r = P[id]; if (!r) return 0; if (r.learned) return r.box >= MASTER_BOX ? 4 : 3; if (r.guided) return 2; if (r.seen) return 1; return 0; }
+  function nextStep(id) { const r = P[id] || {}; if (!r.seen) return "study"; if (!r.guided) return "guided"; if (!r.learned || isDue(id)) return "recall"; return "quiz"; }
+  function daysText(d) { return d <= 0 ? "היום" : d === 1 ? "מחר" : d === 2 ? "בעוד יומיים" : "בעוד " + d + " ימים"; }
+
+  // ---------- sound ----------
+  let actx = null;
+  function tone(freqs, dur, type) {
+    if (!G.sound) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const t0 = actx.currentTime + 0.01;
+      freqs.forEach((f, k) => {
+        const o = actx.createOscillator(), g = actx.createGain(), s = t0 + k * dur;
+        o.type = type || "sine"; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.07, s + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, s + dur);
+        o.connect(g); g.connect(actx.destination); o.start(s); o.stop(s + dur + 0.02);
+      });
+    } catch (e) {}
+  }
+  const sfx = { ok: () => tone([660, 880], 0.08), bad: () => tone([220, 175], 0.12, "triangle"), win: () => tone([523, 659, 784, 1047], 0.1) };
 
   // ---------- text helpers ----------
   function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
   const TOK = "(?:\\d+\\.(?:\\.\\.)?)?(?:\\.\\.\\.)?(?:[KQRBN][a-h1-8]?x?[a-h][1-8]|O-O(?:-O)?|[a-h]x[a-h][1-8]|[a-h][1-8])[+#]?[!?]*";
   const RUN = new RegExp(TOK + "(?:(?:\\s+|-)" + TOK + ")*", "g");
   function fmt(s) { return esc(s).replace(RUN, (m) => '<span class="san" dir="ltr">' + m + "</span>"); }
-  function fig(san) { return san; }
   function moveLabel(i, san) { const n = Math.floor(i / 2) + 1; return (i % 2 === 0 ? n + "." : n + "...") + san; }
+  function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
   // ---------- data ----------
   const LINES = {};
   for (const op of OPENINGS) {
     op.all = [];
-    for (const g of op.groups) for (const ln of g.lines) { ln.op = op; ln.group = g; op.all.push(ln); LINES[ln.id] = ln; }
+    for (const g of op.groups) for (const ln of g.lines) { ln.op = op; ln.group = g; ln.hook = HOOKS[ln.id] || ""; op.all.push(ln); LINES[ln.id] = ln; }
   }
   function built(ln) {
     if (ln._b) return ln._b;
@@ -714,12 +906,34 @@ function parsePgn(text) {
     return (ln._b = { pre: p.pre, plies, fens });
   }
   function practiceSide(ln) { return ln.side || ln.op.side; }
+  // Where each line leaves the moves it shares with the other lines of its opening.
+  for (const op of OPENINGS) {
+    for (const a of op.all) {
+      const pa = built(a).plies; let best = 0;
+      for (const b of op.all) {
+        if (a === b) continue;
+        const pb = built(b).plies; let k = 0;
+        while (k < pa.length && k < pb.length && pa[k].san === pb[k].san) k++;
+        best = Math.max(best, k);
+      }
+      a.branch = best < pa.length ? best : 0;
+    }
+    // Opening map: a tree of every line's moves.
+    const root = { kids: [], ply: -1 };
+    for (const ln of op.all) {
+      let node = root;
+      built(ln).plies.forEach((p, i) => {
+        let k = node.kids.find((c) => c.san === p.san);
+        if (!k) { k = { san: p.san, ply: i, kids: [], lines: [], end: [] }; node.kids.push(k); }
+        k.lines.push(ln.id); node = k;
+      });
+      node.end.push(ln.id);
+    }
+    op.tree = root;
+  }
 
   // ---------- state ----------
-  const S = {
-    op: null, line: null, idx: 0, mode: "study", orient: "w", sel: null, dots: [],
-    pr: null, timer: null, flash: null, msg: null
-  };
+  const S = { op: null, line: null, idx: 0, mode: "study", orient: "w", sel: null, dots: [], pr: null, timer: null, flash: null, msg: null, quiz: null, session: null };
   const B = () => built(S.line);
 
   // ---------- board ----------
@@ -732,13 +946,13 @@ function parsePgn(text) {
     ranks.forEach((r, ri) => files.forEach((f, fi) => {
       const sq = f + r; const el = document.createElement("div");
       el.className = "sq" + ((FILES.indexOf(f) + r) % 2 === 0 ? " d" : "");
-      el.dataset.sq = sq;
       let co = "";
       if (fi === 0) co += '<span class="co r">' + r + "</span>";
       if (ri === 7) co += '<span class="co f">' + f + "</span>";
       el.innerHTML = co + '<div class="pc"></div>';
       boardEl.appendChild(el); sqEls[sq] = el;
     }));
+    lastFen = null;
   }
   function placement(fen) {
     const out = {}; const rows = fen.split(" ")[0].split("/");
@@ -753,42 +967,45 @@ function parsePgn(text) {
   function arrow(from, to, color, w) {
     const [x1, y1] = center(from), [x2, y2] = center(to);
     const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
-    const head = 34, sw = w || 16, ex = x2 - ux * head, ey = y2 - uy * head, px = -uy, py = ux;
-    const sx = x1 + ux * 18, sy = y1 + uy * 18;
-    const pts = [
-      [sx + px * sw / 2, sy + py * sw / 2], [ex + px * sw / 2, ey + py * sw / 2], [ex + px * head * .62, ey + py * head * .62],
-      [x2 - ux * 6, y2 - uy * 6], [ex - px * head * .62, ey - py * head * .62], [ex - px * sw / 2, ey - py * sw / 2], [sx - px * sw / 2, sy - py * sw / 2]
-    ];
+    const head = 34, sw = w || 16, ex = x2 - ux * head, ey = y2 - uy * head, px = -uy, py = ux, sx = x1 + ux * 18, sy = y1 + uy * 18;
+    const pts = [[sx + px * sw / 2, sy + py * sw / 2], [ex + px * sw / 2, ey + py * sw / 2], [ex + px * head * .62, ey + py * head * .62], [x2 - ux * 6, y2 - uy * 6],
+      [ex - px * head * .62, ey - py * head * .62], [ex - px * sw / 2, ey - py * sw / 2], [sx - px * sw / 2, sy - py * sw / 2]];
     return '<polygon points="' + pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ") + '" style="fill:' + color + '"/>';
+  }
+  function view() {
+    if (S.mode === "quiz" && S.quiz && !S.quiz.over) { const q = S.quiz.qs[S.quiz.i]; return { fen: q.shown, last: q.shownLast }; }
+    const b = B(); return { fen: b.fens[S.idx], last: S.idx > 0 ? b.plies[S.idx - 1] : null };
   }
   let lastFen = null;
   function renderBoard(anim) {
-    const b = B(); const fen = b.fens[S.idx]; const pl = placement(fen);
-    const last = S.idx > 0 ? b.plies[S.idx - 1] : null;
-    let chk = null;
-    const g = new Chess(fen);
+    const b = B(); const v = view(); const pl = placement(v.fen);
+    let chk = null; const g = new Chess(v.fen);
     if (g.in_check()) { const t = g.turn(); for (const sq in pl) if (pl[sq] === t + "k") chk = sq; }
+    const next = S.idx < b.plies.length ? b.plies[S.idx] : null;
+    const practicing = (S.mode === "guided" || S.mode === "recall") && S.pr && !S.pr.done;
+    const hintSq = practicing && userTurn() && S.pr.hint >= 1 && next ? next.from : null;
     for (const sq in sqEls) {
-      const el = sqEls[sq]; const pc = el.lastChild;
-      pc.className = "pc" + (pl[sq] ? " pc-" + pl[sq] : "");
-      el.classList.toggle("hl", !!last && (sq === last.from || sq === last.to));
+      const el = sqEls[sq];
+      el.lastChild.className = "pc" + (pl[sq] ? " pc-" + pl[sq] : "");
+      el.classList.toggle("hl", !!v.last && (sq === v.last.from || sq === v.last.to));
       el.classList.toggle("sel", S.sel === sq);
       el.classList.toggle("chk", chk === sq);
       el.classList.toggle("bad", S.flash === sq);
+      el.classList.toggle("hint", hintSq === sq && S.sel !== sq);
       const dot = S.dots.find((d) => d.to === sq);
       el.classList.toggle("dot", !!dot); el.classList.toggle("cap", !!dot && !!pl[sq]);
     }
-    // arrows
     let svg = "";
-    if (S.mode === "study" && S.idx < b.plies.length) { const n = b.plies[S.idx]; svg += arrow(n.from, n.to, "var(--arrow)"); }
-    if (S.mode === "practice" && S.pr && S.pr.hint && S.idx < b.plies.length) { const n = b.plies[S.idx]; svg += arrow(n.from, n.to, "var(--arrow-hint)", 18); }
+    if (next && S.mode === "study") svg += arrow(next.from, next.to, "var(--arrow)");
+    if (next && practicing && userTurn() && (S.mode === "guided" || S.pr.hint >= 2)) svg += arrow(next.from, next.to, S.mode === "guided" ? "var(--arrow)" : "var(--arrow-hint)", 18);
     arrowsEl.innerHTML = svg;
-    if (anim && last && !reduceMotion && lastFen === b.fens[S.idx - 1]) {
+    const last = v.last;
+    if (anim && last && !reduceMotion && lastFen && lastFen !== v.fen) {
       const pcEl = sqEls[last.to].lastChild; const [x1, y1] = center(last.from), [x2, y2] = center(last.to);
-      const size = boardEl.getBoundingClientRect().width / 800;
-      if (pcEl.animate) pcEl.animate([{ transform: `translate(${(x1 - x2) * size}px,${(y1 - y2) * size}px)` }, { transform: "none" }], { duration: 170, easing: "ease-out" });
+      const k = boardEl.getBoundingClientRect().width / 800;
+      if (pcEl.animate) pcEl.animate([{ transform: `translate(${(x1 - x2) * k}px,${(y1 - y2) * k}px)` }, { transform: "none" }], { duration: 170, easing: "ease-out" });
     }
-    lastFen = fen;
+    lastFen = v.fen;
   }
 
   // ---------- pointer input ----------
@@ -801,28 +1018,24 @@ function parsePgn(text) {
     return FILES[f] + (rk + 1);
   }
   function userTurn() {
-    const b = B();
-    return S.mode === "practice" && S.pr && !S.pr.done && S.idx < b.plies.length && b.plies[S.idx].color === S.pr.side && !S.pr.waiting;
+    const b = B(); const pr = S.pr;
+    return (S.mode === "guided" || S.mode === "recall") && pr && !pr.done && !pr.waiting && S.idx < b.plies.length && b.plies[S.idx].color === pr.side;
   }
   function ownPiece(sq) { const pl = placement(B().fens[S.idx]); return pl[sq] && pl[sq][0] === S.pr.side; }
-  function select(sq) {
-    S.sel = sq;
-    S.dots = sq ? new Chess(B().fens[S.idx]).moves({ square: sq, verbose: true }) : [];
-    renderBoard();
-  }
+  function select(sq) { S.sel = sq; S.dots = sq ? new Chess(B().fens[S.idx]).moves({ square: sq, verbose: true }) : []; renderBoard(); }
   boardEl.addEventListener("pointerdown", (e) => {
-    if (!userTurn()) { if (S.mode === "study") studyClick(); return; }
+    if (S.mode === "study") { if (S.idx < B().plies.length) go(S.idx + 1, true); return; }
+    if (!userTurn()) return;
     const sq = sqAt(e.clientX, e.clientY); if (!sq) return;
     if (S.sel && S.sel !== sq && S.dots.some((d) => d.to === sq)) { tryMove(S.sel, sq, true); return; }
     if (!ownPiece(sq)) { select(null); return; }
-    e.preventDefault();
-    select(sq);
+    e.preventDefault(); select(sq);
     const size = boardEl.getBoundingClientRect().width / 8;
-    const g = document.createElement("div");
-    g.className = "ghost pc-" + placement(B().fens[S.idx])[sq];
-    g.style.width = g.style.height = size + "px"; g.style.left = e.clientX + "px"; g.style.top = e.clientY + "px"; g.style.display = "none";
-    document.body.appendChild(g);
-    drag = { from: sq, ghost: g, x: e.clientX, y: e.clientY, moved: false, id: e.pointerId };
+    const gh = document.createElement("div");
+    gh.className = "ghost pc-" + placement(B().fens[S.idx])[sq];
+    gh.style.width = gh.style.height = size + "px"; gh.style.left = e.clientX + "px"; gh.style.top = e.clientY + "px"; gh.style.display = "none";
+    document.body.appendChild(gh);
+    drag = { from: sq, ghost: gh, x: e.clientX, y: e.clientY, moved: false };
     try { boardEl.setPointerCapture(e.pointerId); } catch (err) {}
   });
   boardEl.addEventListener("pointermove", (e) => {
@@ -832,33 +1045,35 @@ function parsePgn(text) {
   });
   function endDrag(e, cancel) {
     if (!drag) return;
-    const d = drag; drag = null; d.ghost.remove(); sqEls[d.from] && sqEls[d.from].classList.remove("dragfrom");
+    const d = drag; drag = null; d.ghost.remove(); if (sqEls[d.from]) sqEls[d.from].classList.remove("dragfrom");
     if (cancel || !d.moved) return;
     const to = sqAt(e.clientX, e.clientY);
     if (to && to !== d.from) tryMove(d.from, to, false); else renderBoard();
   }
   boardEl.addEventListener("pointerup", (e) => endDrag(e, false));
   boardEl.addEventListener("pointercancel", (e) => endDrag(e, true));
-  function studyClick() { if (S.idx < B().plies.length) go(S.idx + 1, true); }
 
-  // ---------- practice ----------
+  // ---------- practice (guided + recall) ----------
   function clearTimer() { if (S.timer) { clearTimeout(S.timer); S.timer = null; } }
-  function startPractice() {
+  function startPractice(kind) {
     clearTimer();
-    S.mode = "practice"; S.idx = 0; S.sel = null; S.dots = []; S.flash = null;
-    S.pr = { side: practiceSide(S.line), mistakes: 0, tries: 0, hint: false, done: false, waiting: false, reveals: 0 };
-    S.msg = { kind: "", big: "תורך", sub: "" };
+    const b = B(); const ln = S.line;
+    S.mode = kind; S.sel = null; S.dots = []; S.flash = null; S.quiz = null;
+    const skipTo = G.skip && ln.branch > 0 && ln.branch < b.plies.length - 2 ? ln.branch : 0;
+    S.idx = skipTo;
+    S.pr = { side: practiceSide(ln), mistakes: 0, tries: 0, hint: 0, done: false, waiting: false, skipped: skipTo };
+    S.msg = null;
     S.orient = S.pr.side; layoutBoard(); renderAll(); opponent();
   }
   function opponent() {
     const b = B(); const pr = S.pr;
     if (S.idx >= b.plies.length) { finish(); return; }
-    if (b.plies[S.idx].color === pr.side) { pr.waiting = false; renderAll(); return; }
+    if (b.plies[S.idx].color === pr.side) { pr.waiting = false; renderBoard(); renderPanel(); return; }
     pr.waiting = true; renderPanel();
     S.timer = setTimeout(() => {
       S.timer = null; S.idx++; pr.waiting = false; renderBoard(true);
-      if (S.idx >= b.plies.length) finish(); else { renderPanel(); renderSheet(); }
-    }, 550);
+      if (S.idx >= b.plies.length) finish(); else renderPanel();
+    }, 520);
   }
   function tryMove(from, to, anim) {
     const b = B(); const pr = S.pr;
@@ -867,185 +1082,418 @@ function parsePgn(text) {
     const exp = b.plies[S.idx];
     S.sel = null; S.dots = [];
     if (exp.from === from && exp.to === to) {
-      pr.tries = 0; pr.hint = false; S.flash = null; S.idx++;
-      S.msg = { kind: "ok", big: "נכון! " + moveLabel(S.idx - 1, exp.san), sub: "" };
-      renderBoard(anim); renderSheet();
-      opponent();
+      pr.tries = 0; pr.hint = 0; S.flash = null; S.idx++;
+      S.msg = { kind: "ok", text: "נכון! " + moveLabel(S.idx - 1, exp.san) };
+      sfx.ok(); renderBoard(anim); opponent();
     } else {
-      pr.mistakes++; pr.tries++;
-      if (pr.tries >= 2) pr.hint = true;
+      pr.tries++;
+      if (S.mode === "recall") { pr.mistakes++; if (pr.tries >= 2) pr.hint = Math.max(pr.hint, 1); if (pr.tries >= 3) pr.hint = 2; }
       S.flash = to;
-      S.msg = { kind: "no", big: moveLabel(S.idx, legal.san) + " הוא מהלך חוקי, אבל לא המהלך בקו.", sub: pr.hint ? "החץ הכתום מראה את המהלך הנכון." : "נסו שוב. אחרי טעות נוספת יופיע רמז." };
-      renderBoard();
+      S.msg = { kind: "no", text: moveLabel(S.idx, legal.san) + " הוא מהלך חוקי, אבל לא המהלך בקו.",
+        sub: S.mode === "guided" ? "עקבו אחרי החץ הירוק." : pr.hint >= 2 ? "החץ הכתום מראה את המהלך." : pr.hint === 1 ? "העיגול הכתום מסמן איזה כלי צריך לזוז." : "נסו שוב. אחרי טעות נוספת תקבלו רמז." };
+      sfx.bad(); renderBoard();
       boardEl.classList.remove("shake"); void boardEl.offsetWidth; if (!reduceMotion) boardEl.classList.add("shake");
       setTimeout(() => { if (S.flash === to) { S.flash = null; renderBoard(); } }, 600);
       renderPanel();
     }
   }
+  function hint() {
+    if (!userTurn()) return;
+    if (S.pr.hint < 2) { S.pr.hint++; if (S.pr.hint === 2) S.pr.mistakes++; }
+    renderBoard(); renderPanel();
+  }
   function reveal() {
     if (!userTurn()) return;
-    const b = B(); const exp = b.plies[S.idx];
-    S.pr.mistakes++; S.pr.reveals++; S.pr.tries = 0; S.pr.hint = false; S.sel = null; S.dots = [];
-    S.idx++; S.msg = { kind: "no", big: "המהלך היה " + moveLabel(S.idx - 1, exp.san), sub: "נספר כטעות. נסו לזכור אותו לפעם הבאה." };
-    renderBoard(true); renderSheet(); opponent();
+    const exp = B().plies[S.idx];
+    if (S.mode === "recall") S.pr.mistakes++;
+    S.pr.tries = 0; S.pr.hint = 0; S.sel = null; S.dots = []; S.idx++;
+    S.msg = { kind: "no", text: "המהלך היה " + moveLabel(S.idx - 1, exp.san), sub: "נסו לזכור אותו לפעם הבאה." };
+    renderBoard(true); opponent();
   }
   function finish() {
     const pr = S.pr; pr.done = true; pr.waiting = false;
-    const prev = progress[S.line.id] || {};
-    progress[S.line.id] = { done: true, clean: !!prev.clean || pr.mistakes === 0, best: Math.min(prev.best == null ? 99 : prev.best, pr.mistakes) };
-    save("oo-progress", progress);
-    renderAll();
+    const r = rec(S.line.id);
+    r.seen = true; r.guided = true;
+    bumpDay();
+    if (S.mode === "recall") {
+      const m = pr.mistakes; const wasDue = isDue(S.line.id) || !r.learned;
+      r.reps++; r.best = r.best == null ? m : Math.min(r.best, m);
+      pr.oldBox = r.box || 0;
+      if (m === 0) r.box = wasDue || !r.box ? Math.min(6, (r.box || 0) + 1) : r.box;
+      else if (m === 1) r.box = Math.max(1, r.box || 1);
+      else r.box = 1;
+      if (m <= 1) r.learned = true;
+      r.due = r.learned ? today() + (m >= 2 ? 1 : INTERVALS[r.box]) : null;
+      pr.grade = m;
+      if (S.session) S.session.results.push({ id: S.line.id, m });
+    }
+    persist();
+    sfx.win(); boardEl.classList.add("glow"); setTimeout(() => boardEl.classList.remove("glow"), 900);
+    renderAll(); renderSide();
+  }
+
+  // ---------- quiz ----------
+  function plausible(g, correct) {
+    const moves = g.moves({ verbose: true }).filter((m) => m.san !== correct);
+    const central = "cdef", score = (m) => {
+      let s = Math.random() * 1.5;
+      if (m.piece === "n" || m.piece === "b") s += 2;
+      if (central.includes(m.to[0]) && "3456".includes(m.to[1])) s += 2;
+      if (m.flags.includes("c")) s += 1;
+      if (m.flags.includes("k") || m.flags.includes("q")) s += 1.5;
+      if (m.piece === "k") s -= 3;
+      if (m.piece === "p" && "ah".includes(m.from[0])) s -= 1.5;
+      if (m.piece === "q") s -= 0.5;
+      return s;
+    };
+    return moves.map((m) => [score(m), m.san]).sort((a, b) => b[0] - a[0]).slice(0, 3).map((x) => x[1]);
+  }
+  function makeQuiz() {
+    const b = B(); const ln = S.line; const side = practiceSide(ln);
+    const mine = b.plies.map((p, i) => i).filter((i) => b.plies[i].color === side);
+    const moveIdx = shuffle(mine).slice(0, 4).sort((x, y) => x - y);
+    const qs = moveIdx.map((i) => {
+      const correct = b.plies[i].san;
+      return { type: "move", i, shown: b.fens[i], shownLast: i > 0 ? b.plies[i - 1] : null, options: shuffle([correct].concat(plausible(new Chess(b.fens[i]), correct))), answer: correct };
+    });
+    const pool = [];
+    for (const other of ln.op.all) if (other !== ln) for (const p of built(other).plies) if (p.c && p.c.length > 28) pool.push(p.c);
+    const whyIdx = shuffle(b.plies.map((p, i) => i).filter((i) => b.plies[i].c && b.plies[i].c.length > 28 && !moveIdx.includes(i))).slice(0, 2).sort((x, y) => x - y);
+    const whys = whyIdx.map((i) => {
+      const c = b.plies[i].c; const wrong = shuffle(pool.filter((t) => t !== c)).slice(0, 3);
+      return { type: "why", i, shown: b.fens[i + 1], shownLast: b.plies[i], options: shuffle([c].concat(wrong)), answer: c };
+    });
+    let all = qs.concat(whys).sort((x, y) => x.i - y.i);
+    return { qs: all, i: 0, score: 0, picked: null, marks: [], over: false };
+  }
+  function startQuiz() {
+    clearTimer();
+    S.mode = "quiz"; S.pr = null; S.sel = null; S.dots = []; S.flash = null;
+    S.quiz = makeQuiz(); S.orient = practiceSide(S.line); layoutBoard(); renderAll();
+  }
+  function answer(k) {
+    const Q = S.quiz; const q = Q.qs[Q.i]; if (Q.picked != null) return;
+    Q.picked = k; const ok = q.options[k] === q.answer;
+    if (ok) { Q.score++; sfx.ok(); } else sfx.bad();
+    Q.marks[Q.i] = ok ? "r" : "w";
+    if (q.type === "move") { const b = B(); q.shown = b.fens[q.i + 1]; q.shownLast = b.plies[q.i]; renderBoard(true); }
+    renderPanel();
+  }
+  function nextQ() {
+    const Q = S.quiz;
+    if (Q.i + 1 >= Q.qs.length) {
+      Q.over = true;
+      const r = rec(S.line.id); const pct = Math.round((Q.score / Q.qs.length) * 100);
+      r.quiz = Math.max(r.quiz || 0, pct); bumpDay(); persist(); sfx.win(); renderAll(); renderSide();
+      return;
+    }
+    Q.i++; Q.picked = null; renderBoard(); renderPanel();
   }
 
   // ---------- navigation ----------
   function go(i, anim) {
     const n = B().plies.length; i = Math.max(0, Math.min(n, i));
-    const step = i === S.idx + 1; S.idx = i; S.sel = null; S.dots = [];
-    renderBoard(anim && step); renderPanel(); renderSheet(); renderNav();
+    S.idx = i; S.sel = null; S.dots = [];
+    if (i === n && S.mode === "study") { const r = rec(S.line.id); if (!r.seen) { r.seen = true; persist(); renderSide(); renderSteps(); renderHead(); } }
+    renderBoard(anim); renderPanel(); renderNav();
+    if (G.view === "map") renderSide();
   }
   $("nStart").onclick = () => go(0);
   $("nPrev").onclick = () => go(S.idx - 1);
   $("nNext").onclick = () => go(S.idx + 1, true);
   $("nEnd").onclick = () => go(B().plies.length);
   document.addEventListener("keydown", (e) => {
-    if (S.mode !== "study" || e.target.closest("input,textarea")) return;
+    if (e.key === "Escape") { document.body.classList.remove("drawer"); closeIntro(); return; }
+    if (S.mode !== "study" || e.target.closest("input,textarea") || !$("intro").hidden) return;
     if (e.key === "ArrowRight") { e.preventDefault(); go(S.idx + 1, true); }
     else if (e.key === "ArrowLeft") { e.preventDefault(); go(S.idx - 1); }
     else if (e.key === "Home") { e.preventDefault(); go(0); }
     else if (e.key === "End") { e.preventDefault(); go(B().plies.length); }
   });
   $("flipBtn").onclick = () => { S.orient = S.orient === "w" ? "b" : "w"; layoutBoard(); renderBoard(); };
-  $("mStudy").onclick = () => setMode("study");
-  $("mPractice").onclick = () => setMode("practice");
+  $("steps").querySelectorAll("button").forEach((b) => (b.onclick = () => setMode(b.dataset.m)));
   function setMode(m) {
     clearTimer();
-    if (m === "practice") { startPractice(); return; }
-    S.mode = "study"; S.pr = null; S.sel = null; S.dots = []; S.flash = null;
+    if (m === "guided" || m === "recall") { startPractice(m); return; }
+    if (m === "quiz") { startQuiz(); return; }
+    S.mode = "study"; S.pr = null; S.quiz = null; S.sel = null; S.dots = []; S.flash = null; S.idx = 0;
     S.orient = S.line.op.side; layoutBoard(); renderAll();
   }
 
-  // ---------- selection ----------
-  function selectOpening(id, keepLine) {
+  // ---------- selection & sessions ----------
+  function selectOpening(id) {
     S.op = OPENINGS.find((o) => o.id === id) || OPENINGS[0];
-    renderTabs(); renderSide();
-    if (!keepLine) selectLine(S.op.all[0].id);
+    const ln = S.op.all.find((l) => stage(l.id) < 3) || S.op.all[0];
+    selectLine(ln.id, "study");
   }
-  function selectLine(id) {
+  function selectLine(id, mode, fromSession) {
     const ln = LINES[id]; if (!ln) return;
     clearTimer();
-    if (S.op !== ln.op) { S.op = ln.op; renderTabs(); }
-    S.line = ln; S.idx = 0; S.sel = null; S.dots = []; S.flash = null;
+    if (!fromSession) S.session = null;
+    S.op = ln.op; S.line = ln; S.idx = 0; S.sel = null; S.dots = []; S.flash = null;
     save("oo-last", id);
     try { history.replaceState(null, "", "#" + id); } catch (e) {}
     document.body.classList.remove("drawer");
-    renderSide();
-    if (S.mode === "practice") startPractice();
-    else { S.orient = ln.op.side; layoutBoard(); renderAll(); }
+    renderTabs(); renderSide();
+    setMode(mode || "study");
   }
-  function nextLine() {
-    const all = S.op.all; const i = all.indexOf(S.line);
-    selectLine(all[(i + 1) % all.length].id);
+  function dueList() { const out = []; for (const op of OPENINGS) for (const l of op.all) if (isDue(l.id)) out.push(l); return out.sort((a, b) => P[a.id].due - P[b.id].due); }
+  function nextNew() { return S.op.all.find((l) => stage(l.id) < 3) || OPENINGS.map((o) => o.all.find((l) => stage(l.id) < 3)).find(Boolean); }
+  function startSession() {
+    const due = dueList(); if (!due.length) return;
+    S.session = { queue: due.map((l) => l.id), i: 0, results: [] };
+    selectLine(S.session.queue[0], "recall", true);
   }
-  function randomLine() {
-    const all = S.op.all; const pool = all.filter((l) => !(progress[l.id] && progress[l.id].clean) && l !== S.line);
-    const src = pool.length ? pool : all.filter((l) => l !== S.line);
-    S.mode = "practice";
-    selectLine(src[Math.floor(Math.random() * src.length)].id);
+  function sessionNext() {
+    const s = S.session; if (!s) return;
+    s.i++;
+    if (s.i >= s.queue.length) { renderPanel(); return; }
+    selectLine(s.queue[s.i], "recall", true);
+  }
+  function nextLine() { const all = S.op.all; const i = all.indexOf(S.line); const ln = all[(i + 1) % all.length]; selectLine(ln.id, nextStep(ln.id) === "quiz" ? "study" : nextStep(ln.id)); }
+  function doToday() {
+    const due = dueList();
+    if (due.length) { startSession(); return; }
+    const n = nextNew();
+    if (n) selectLine(n.id, nextStep(n.id));
+    else { const all = S.op.all; selectLine(all[Math.floor(Math.random() * all.length)].id, "quiz"); }
   }
 
   // ---------- rendering ----------
+  function pips(id) {
+    const s = stage(id);
+    return '<span class="pips" title="' + ["חדש", "נצפה", "תורגל", "נלמד", "שולט"][s] + '">' + [1, 2, 3, 4].map((k) => '<i class="' + (s >= k ? "on" + (k === 4 ? " m" : "") : "") + '"></i>').join("") + "</span>";
+  }
   function renderTabs() {
     $("tabs").innerHTML = OPENINGS.map((o) => {
-      const done = o.all.filter((l) => progress[l.id] && progress[l.id].done).length;
+      const learned = o.all.filter((l) => stage(l.id) >= 3).length;
       return '<button type="button" class="tab" data-op="' + o.id + '" aria-pressed="' + (o === S.op) + '">' +
         '<span class="ico pc-' + o.side + (o.id === "caro" ? "n" : "b") + '"></span><span><b>' + esc(o.name) + "</b><small>" +
-        (o.side === "w" ? "משחקים בלבן" : "משחקים בשחור") + " · " + done + "/" + o.all.length + " קווים</small></span></button>";
+        (o.side === "w" ? "משחקים בלבן" : "משחקים בשחור") + " · נלמדו " + learned + "/" + o.all.length + "</small></span></button>";
     }).join("");
     $("tabs").querySelectorAll(".tab").forEach((b) => (b.onclick = () => { if (b.dataset.op !== S.op.id) selectOpening(b.dataset.op); }));
   }
+  function todayCard() {
+    const due = dueList(); let learnedAll = 0, total = 0;
+    for (const o of OPENINGS) for (const l of o.all) { total++; if (stage(l.id) >= 3) learnedAll++; }
+    const n = nextNew(); const st = streakNow();
+    let label, why;
+    if (due.length) { label = "להתחיל חזרה יומית (" + (due.length === 1 ? "קו אחד" : due.length + " קווים") + ")"; why = "חזרה בזמן הנכון היא הדרך הכי יעילה לזכור לאורך זמן."; }
+    else if (n) { const step = { study: "לצפות", guided: "לתרגל בהדרכה", recall: "לשחק מהזיכרון" }[nextStep(n.id)] || "ללמוד"; label = step + ": " + n.name; why = "אין חזרות שמחכות היום. זה זמן טוב ללמוד קו חדש."; }
+    else { label = "חידון על קו אקראי"; why = "כל הקווים נלמדו. החידון שומר עליהם טריים."; }
+    return '<div class="today"><h2>התוכנית להיום</h2><div class="trow">' +
+      '<div class="' + (st ? "hot" : "") + '"><b>' + st + "</b><small>ימי רצף</small></div>" +
+      "<div><b>" + due.length + "</b><small>לחזרה היום</small></div>" +
+      "<div><b>" + learnedAll + "/" + total + "</b><small>קווים נלמדו</small></div></div>" +
+      '<button type="button" class="go" id="todayGo">' + fmt(label) + '</button><p class="why">' + why + "</p></div>";
+  }
+  function treeHtml(node) {
+    let h = '<ul class="tree">';
+    for (const k of node.kids) {
+      const run = [k]; let cur = k;
+      while (cur.kids.length === 1 && !cur.end.length) { cur = cur.kids[0]; run.push(cur); }
+      h += '<li><div class="tn">' + run.map((n, j) => {
+        const num = Math.floor(n.ply / 2) + 1;
+        const lbl = n.ply % 2 === 0 ? num + "." + n.san : (j === 0 ? num + "..." : "") + n.san;
+        const on = S.line && n.lines.includes(S.line.id);
+        const cur2 = on && S.mode === "study" && S.idx === n.ply + 1;
+        return '<button type="button" class="tm' + (cur2 ? " cur" : on ? " on" : "") + '" data-l="' + (on ? S.line.id : n.lines[0]) + '" data-p="' + (n.ply + 1) + '">' + esc(lbl) + "</button>";
+      }).join(" ") + "</div>";
+      h += cur.end.map((id) => '<button type="button" class="tl" data-l="' + id + '" aria-current="' + (S.line && S.line.id === id) + '">' + fmt(LINES[id].name) + "</button>").join("");
+      if (cur.kids.length) h += treeHtml(cur);
+      h += "</li>";
+    }
+    return h + "</ul>";
+  }
   function renderSide() {
-    const op = S.op;
-    const done = op.all.filter((l) => progress[l.id] && progress[l.id].done).length;
-    let h = '<div class="about"><h2>' + esc(op.name) + '</h2><span class="mv san" dir="ltr">' + esc(op.moves) + "</span><p>" + fmt(op.tagline) + "</p>" +
+    const op = S.op; if (!op) return;
+    const learned = op.all.filter((l) => stage(l.id) >= 3).length, started = op.all.filter((l) => stage(l.id) >= 1 && stage(l.id) < 3).length;
+    let h = todayCard();
+    h += '<div class="about"><h2>' + esc(op.name) + '</h2><span class="mv san" dir="ltr">' + esc(op.moves) + "</span><p>" + fmt(op.tagline) + "</p>" +
       '<details><summary>רעיונות מרכזיים</summary><ul>' + op.ideas.map((i) => "<li>" + fmt(i) + "</li>").join("") + "</ul></details>" +
-      '<div class="prog"><div class="bar"><i style="width:' + Math.round((done / op.all.length) * 100) + '%"></i></div><span>' + done + " מתוך " + op.all.length + "</span></div>" +
-      '<button type="button" class="rand" id="randBtn">תרגול קו אקראי</button></div>';
-    for (const g of op.groups) {
-      h += '<div class="group"><h3>' + fmt(g.name) + '</h3><div class="gb">' + fmt(g.blurb) + "</div>";
-      for (const l of g.lines) {
-        const p = progress[l.id];
-        const st = p ? (p.clean ? '<span class="st clean">✓</span>' : '<span class="st done">✓</span>') : '<span class="st"></span>';
-        const tag = l.kind === "trap" ? '<span class="tag">מלכודת</span>' : l.kind === "game" ? '<span class="tag">משחק מפורסם</span>' : "";
-        h += '<button type="button" class="ln" data-id="' + l.id + '" aria-current="' + (l === S.line) + '">' + st +
-          "<span>" + fmt(l.name) + tag + '</span><span class="eco">' + l.eco + "</span></button>";
+      '<div class="prog"><div class="bar"><i style="width:' + (learned / op.all.length) * 100 + '%"></i><i class="part" style="width:' + (started / op.all.length) * 100 + '%"></i></div><span>' + learned + " נלמדו מתוך " + op.all.length + "</span></div></div>";
+    h += '<div class="seg" role="group" aria-label="תצוגה"><button type="button" data-v="list" aria-pressed="' + (G.view !== "map") + '">רשימת קווים</button><button type="button" data-v="map" aria-pressed="' + (G.view === "map") + '">מפת הפתיחה</button></div>';
+    if (G.view === "map") {
+      h += '<div class="map"><p>כל ענף הוא מקום שבו היריב או אתם בוחרים מהלך אחר. לחצו על מהלך כדי לקפוץ אליו, או על שם קו כדי לפתוח אותו.</p>' + treeHtml(op.tree) + "</div>";
+    } else {
+      for (const g of op.groups) {
+        h += '<div class="group"><h3>' + fmt(g.name) + '</h3><div class="gb">' + fmt(g.blurb) + "</div>";
+        for (const l of g.lines) {
+          const tag = (isDue(l.id) ? '<span class="tag due">לחזרה</span>' : "") + (l.kind === "trap" ? '<span class="tag">מלכודת</span>' : l.kind === "game" ? '<span class="tag">משחק מפורסם</span>' : "");
+          h += '<button type="button" class="ln" data-id="' + l.id + '" aria-current="' + (l === S.line) + '">' + pips(l.id) + "<span>" + fmt(l.name) + tag + '</span><span class="eco">' + l.eco + "</span></button>";
+        }
+        h += "</div>";
       }
-      h += "</div>";
     }
     const side = $("side"); const scroll = side.scrollTop; side.innerHTML = h; side.scrollTop = scroll;
-    side.querySelectorAll(".ln").forEach((b) => (b.onclick = () => selectLine(b.dataset.id)));
-    $("randBtn").onclick = randomLine;
+    side.querySelectorAll(".ln").forEach((b) => (b.onclick = () => selectLine(b.dataset.id, "study")));
+    side.querySelectorAll(".tl").forEach((b) => (b.onclick = () => selectLine(b.dataset.l, "study")));
+    side.querySelectorAll(".tm").forEach((b) => (b.onclick = () => {
+      const id = b.dataset.l, p = +b.dataset.p;
+      if (!S.line || S.line.id !== id || S.mode !== "study") selectLine(id, "study");
+      go(p); renderSide();
+    }));
+    side.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => { G.view = b.dataset.v; persist(); renderSide(); }));
+    $("todayGo").onclick = doToday;
   }
   function renderHead() {
-    const l = S.line;
+    const l = S.line; const r = P[l.id];
     $("crumb").innerHTML = esc(l.op.name) + " · " + fmt(l.group.name) + ' · <span class="san">' + l.eco + "</span>";
     $("lineName").innerHTML = fmt(l.name);
     $("lineSum").innerHTML = fmt(l.summary);
-    $("mStudy").setAttribute("aria-pressed", S.mode === "study");
-    $("mPractice").setAttribute("aria-pressed", S.mode === "practice");
-    $("navBar").hidden = S.mode !== "study";
+    let st;
+    const s = stage(l.id);
+    if (s === 0) st = "קו חדש. מתחילים בצפייה.";
+    else if (s === 1) st = "נצפה. השלב הבא: תרגול מודרך.";
+    else if (s === 2) st = "תורגל. השלב הבא: לשחק מהזיכרון.";
+    else { const d = r.due - today(); st = (s === 4 ? "שולטים בקו" : "נלמד") + " · " + (d <= 0 ? "מחכה לחזרה היום" : "חזרה הבאה " + daysText(d)); }
+    $("lineStat").innerHTML = pips(l.id) + "<span>" + st + "</span>";
+    const sb = $("sessionBar");
+    if (S.session) {
+      const s2 = S.session; sb.hidden = false;
+      sb.innerHTML = "<span><b>חזרה יומית</b> · קו " + Math.min(s2.i + 1, s2.queue.length) + " מתוך " + s2.queue.length + '</span><button type="button" id="endSession">סיום החזרה</button>';
+      $("endSession").onclick = () => { S.session = null; renderHead(); renderPanel(); };
+    } else sb.hidden = true;
+  }
+  function renderSteps() {
+    const id = S.line.id; const r = P[id] || {}; const rec2 = nextStep(id);
+    const done = { study: !!r.seen, guided: !!r.guided, recall: !!r.learned, quiz: (r.quiz || 0) >= 80 };
+    $("steps").querySelectorAll("button").forEach((b) => {
+      const m = b.dataset.m;
+      b.setAttribute("aria-pressed", S.mode === m);
+      b.classList.toggle("done", done[m]);
+      b.classList.toggle("rec", rec2 === m && S.mode !== m && !(m === "quiz" && done.quiz));
+      b.querySelector("b").textContent = done[m] ? "✓" : m === "quiz" ? "?" : { study: "1", guided: "2", recall: "3" }[m];
+    });
   }
   function renderNav() {
+    const study = S.mode === "study";
+    $("navBar").hidden = !study; $("kbdHint").hidden = !study;
     const n = B().plies.length;
     $("nStart").disabled = $("nPrev").disabled = S.idx === 0;
     $("nNext").disabled = $("nEnd").disabled = S.idx === n;
     $("counter").textContent = S.idx + " / " + n;
   }
+  function hookCard(extra) {
+    if (!S.line.hook) return "";
+    return '<div class="card hook"><h4>משפט לזכירה</h4><div class="h">' + fmt(S.line.hook) + "</div>" + (extra ? '<div class="s">' + extra + "</div>" : "") + "</div>";
+  }
   function noteCard() {
     const b = B();
     if (S.idx === 0) {
-      return '<div class="card note"><h4>לפני שמתחילים</h4><div class="txt">' + fmt(b.pre || S.line.summary) +
-        '</div><div class="txt empty" style="margin-top:8px;font-size:14px">' + (S.mode === "study" ? "לחצו על החץ, על הלוח או על מקש → כדי להתקדם. החץ הירוק על הלוח מראה את המהלך הבא." : "") + "</div></div>";
+      return '<div class="card note"><h4>לפני שמתחילים</h4><div class="txt">' + fmt(b.pre || S.line.summary) + "</div>" +
+        (S.mode === "study" ? '<div class="txt empty" style="margin-top:8px;font-size:14px">לחצו על הלוח, על החץ למטה או על מקש → כדי להתקדם. החץ הירוק מראה את המהלך הבא. לפני כל לחיצה, נסו לנחש בעצמכם.</div>' : "") + "</div>";
     }
     const p = b.plies[S.idx - 1];
-    return '<div class="card note"><h4>' + (p.color === "w" ? "מהלך של לבן" : "מהלך של שחור") + '</h4><div class="mvl">' + esc(moveLabel(S.idx - 1, fig(p.san))) +
+    const isBranch = S.line.branch > 0 && S.idx - 1 === S.line.branch;
+    return '<div class="card note"><h4>' + (p.color === "w" ? "מהלך של לבן" : "מהלך של שחור") + '</h4><div class="mvl">' + esc(moveLabel(S.idx - 1, p.san)) +
       (p.nag ? '<span class="nag">' + esc(p.nag) + "</span>" : "") + "</div>" +
-      (p.c ? '<p class="txt">' + fmt(p.c) + "</p>" : '<p class="txt empty">מהלך טבעי בקו. אין כאן הערה מיוחדת.</p>') + "</div>";
+      (p.c ? '<p class="txt">' + fmt(p.c) + "</p>" : '<p class="txt empty">מהלך טבעי בקו. אין כאן הערה מיוחדת.</p>') +
+      (isBranch ? '<span class="branch">כאן הקו הזה נפרד משאר הקווים. זה המהלך שכדאי לזכור במיוחד.</span>' : "") + "</div>";
   }
-  function ideasCard() {
-    return '<div class="card ideas"><h4>מה לזכור בקו הזה</h4><ul>' + S.line.ideas.map((i) => "<li>" + fmt(i) + "</li>").join("") + "</ul></div>";
+  function ideasCard() { return '<div class="card ideas"><h4>התוכנית בקו הזה</h4><ul>' + S.line.ideas.map((i) => "<li>" + fmt(i) + "</li>").join("") + "</ul></div>"; }
+  function sheetCard() { return '<div class="card sheet" id="sheet"></div>'; }
+
+  function panelStudy() {
+    const b = B(); const n = b.plies.length;
+    let h = "";
+    if (S.idx === n) {
+      h += '<div class="card status win"><div class="big">סיימתם לצפות בקו.</div><div class="sub">עכשיו תורכם: שחקו את הקו בעצמכם, עם חץ שמראה את הדרך.</div>' +
+        '<div class="row"><button type="button" class="btn primary" data-go="guided">לתרגול מודרך</button><button type="button" class="btn" data-go="study">לצפות שוב</button></div></div>';
+    }
+    h += hookCard(S.idx === 0 ? "קראו אותו פעם אחת בקול. משפט קצר נשמר בזיכרון הרבה יותר טוב מרשימת מהלכים." : "") + noteCard() + (S.idx === 0 || S.idx === n ? ideasCard() : "") + sheetCard();
+    return h;
+  }
+  function ladder(box) { return '<div class="ladder" title="מרווחי החזרה">' + INTERVALS.slice(1).map((d, k) => '<span class="' + (box >= k + 1 ? "on" : "") + '">' + d + (d === 1 ? " יום" : " ימים") + "</span>").join("") + "</div>"; }
+  function panelPractice() {
+    const pr = S.pr; const b = B(); const guided = S.mode === "guided";
+    const sideIn = pr.side === "w" ? "בלבן" : "בשחור", sideOf = pr.side === "w" ? "הלבן" : "השחור";
+    let h = "";
+    if (pr.done) {
+      const r = P[S.line.id];
+      if (guided) {
+        h += '<div class="card status win"><div class="big">יפה! שיחקתם את כל הקו.</div><div class="sub">השלב הבא הוא החשוב ביותר: לשחק את הקו מהזיכרון, בלי חצים. גם אם תטעו, הניסיון להיזכר הוא מה שמקבע את הזיכרון.</div>' +
+          '<div class="row"><button type="button" class="btn primary" data-go="recall">לשחק מהזיכרון</button><button type="button" class="btn" data-go="guided">עוד פעם עם חצים</button></div></div>';
+      } else {
+        const m = pr.grade; const d = r.due != null ? r.due - today() : null;
+        const big = m === 0 ? "מושלם! בלי אף טעות." : m === 1 ? "כמעט מושלם. טעות אחת." : "היו " + m + " טעויות.";
+        const sub = m === 0 ? "הקו עלה שלב בסולם החזרות. הוא יחזור אליכם " + daysText(d) + "." :
+          m === 1 ? "הקו נשמר כנלמד. הוא יחזור אליכם " + daysText(d) + "." :
+          "הקו יחזור מחר. כדאי לנסות אותו שוב עכשיו: חזרה מיידית אחרי טעות עוזרת מאוד.";
+        let btns;
+        if (S.session) {
+          const s = S.session; const more = s.i + 1 < s.queue.length;
+          btns = more ? '<button type="button" class="btn primary" id="sNext">לקו הבא בחזרה (' + (s.i + 2) + "/" + s.queue.length + ")</button>" : "";
+          btns += '<button type="button" class="btn" data-go="recall">שוב את הקו הזה</button>';
+        } else {
+          btns = (m >= 2 ? '<button type="button" class="btn primary" data-go="recall">לנסות שוב עכשיו</button><button type="button" class="btn" data-go="study">לחזור לצפייה</button>'
+            : '<button type="button" class="btn primary" id="pNext">לקו הבא</button><button type="button" class="btn" data-go="quiz">חידון על הקו</button><button type="button" class="btn" data-go="recall">שוב</button>');
+        }
+        h += '<div class="card status ' + (m <= 1 ? "win" : "no") + '"><div class="big">' + big + '</div><div class="sub">' + sub + "</div>" + (r.learned ? ladder(r.box) : "") +
+          '<div class="stats"><span>טעויות <b>' + m + '</b></span><span>הכי טוב <b>' + (r.best == null ? m : r.best) + '</b></span><span>חזרות <b>' + r.reps + "</b></span></div>" +
+          '<div class="row">' + btns + "</div></div>";
+      }
+      if (S.session && S.session.i + 1 >= S.session.queue.length) h += sessionSummary();
+      return h + hookCard() + sheetCard();
+    }
+    const turn = userTurn(); const m = S.msg || {};
+    const next = S.idx < b.plies.length ? b.plies[S.idx] : null;
+    let kind = "", big, sub = "";
+    if (pr.waiting) { big = "היריב משחק..."; }
+    else if (m.kind === "no") { kind = " no"; big = m.text; sub = m.sub || ""; }
+    else {
+      big = guided ? "שחקו את המהלך שהחץ מראה" : "מה המהלך של " + sideOf + "?";
+      sub = (m.kind === "ok" ? fmt(m.text) + ". " : "") + (guided ? "גררו את הכלי או לחצו עליו ואז על המשבצת." : "נסו להיזכר לבד לפני שמבקשים רמז.");
+    }
+    h += '<div class="card status' + kind + '"><h4>' + (guided ? "תרגול מודרך" : "מהזיכרון") + " · אתם משחקים " + sideIn + '</h4><div class="big">' + fmt(big) + '</div><div class="sub">' + sub + "</div>";
+    if (guided && turn && next && next.c) h += '<div class="pre"><b>למה המהלך הזה?</b>' + fmt(next.c) + "</div>";
+    if (pr.skipped) h += '<div class="sub" style="margin-top:8px;color:var(--muted);font-size:13px">דילגנו על ' + pr.skipped + " המהלכים שמשותפים לקווים אחרים.</div>";
+    h += '<div class="stats"><span>מהלך <b>' + Math.min(S.idx + 1, b.plies.length) + "/" + b.plies.length + "</b></span>" + (guided ? "" : "<span>טעויות <b>" + pr.mistakes + "</b></span>") + "</div>";
+    h += '<div class="row">' + (guided ? "" : '<button type="button" class="btn" id="pHint"' + (turn && pr.hint < 2 ? "" : " disabled") + ">" + (pr.hint === 0 ? "רמז: איזה כלי?" : "רמז: הראו חץ") + "</button>") +
+      '<button type="button" class="btn" id="pReveal"' + (turn ? "" : " disabled") + ">הראו את המהלך</button>" +
+      '<button type="button" class="btn" data-go="' + S.mode + '">מההתחלה</button></div>';
+    h += '<label class="skipchk"><input type="checkbox" id="skipChk"' + (G.skip ? " checked" : "") + "> לדלג על המהלכים שמשותפים לקווים אחרים</label></div>";
+    h += (S.idx > 0 ? noteCard() : guided ? hookCard() : '<div class="card note"><h4>לפני שמתחילים</h4><p class="txt">נסו לדמיין את הקו בראש לפני המהלך הראשון. מה המשפט לזכירה של הקו הזה?</p></div>') + sheetCard();
+    return h;
+  }
+  function sessionSummary() {
+    const s = S.session; const perfect = s.results.filter((x) => x.m === 0).length;
+    return '<div class="card"><h4>סיכום החזרה היומית</h4><div>עברתם על ' + s.results.length + " קווים, " + perfect + ' מהם בלי טעויות.</div><div class="row"><button type="button" class="btn primary" id="sDone">סיום</button></div></div>';
+  }
+  function panelQuiz() {
+    const Q = S.quiz;
+    const bar = '<div class="qbar">' + Q.qs.map((q, k) => '<i class="' + (Q.marks[k] || (k === Q.i && !Q.over ? "c" : "")) + '"></i>').join("") + "</div>";
+    if (Q.over) {
+      const pct = Math.round((Q.score / Q.qs.length) * 100);
+      return '<div class="card status ' + (pct >= 80 ? "win" : "no") + '"><div class="big">' + Q.score + " מתוך " + Q.qs.length + '</div><div class="sub">' +
+        (pct >= 80 ? "מצוין. אתם מבינים את הקו, לא רק זוכרים אותו." : "כדאי לעבור שוב על ההסברים בשלב הצפייה, ואז לנסות שוב.") + "</div>" + bar +
+        '<div class="row"><button type="button" class="btn primary" data-go="quiz">חידון חדש</button><button type="button" class="btn" data-go="study">לצפייה</button><button type="button" class="btn" id="pNext">לקו הבא</button></div></div>' + hookCard();
+    }
+    const q = Q.qs[Q.i]; const b = B(); const p = b.plies[q.i];
+    const title = q.type === "move" ? "מה משחקים כאן?" : "למה שוחק " + moveLabel(q.i, p.san) + "?";
+    const sub = q.type === "move" ? (p.color === "w" ? "תור הלבן." : "תור השחור.") + " בחרו את המהלך של הקו." : "המהלך מסומן על הלוח. בחרו את ההסבר הנכון.";
+    let h = '<div class="card q"><div class="qn">שאלה ' + (Q.i + 1) + " מתוך " + Q.qs.length + "</div>" + bar + '<div class="qt">' + fmt(title) + '</div><div class="sub" style="color:var(--muted);font-size:14px">' + sub + "</div>";
+    h += '<div class="opts' + (q.type === "move" ? " mv" : "") + '">' + q.options.map((o, k) => {
+      let cls = "opt";
+      if (Q.picked != null) { if (o === q.answer) cls += " right"; else if (k === Q.picked) cls += " wrong"; }
+      return '<button type="button" class="' + cls + '" data-k="' + k + '"' + (Q.picked != null ? " disabled" : "") + ">" + (q.type === "move" ? esc(moveLabel(q.i, o)) : fmt(o)) + "</button>";
+    }).join("") + "</div>";
+    if (Q.picked != null) {
+      const ok = q.options[Q.picked] === q.answer;
+      h += '<div class="exp"><b>' + (ok ? "נכון!" : "לא בדיוק.") + "</b> " + (q.type === "move" ? (p.c ? fmt(p.c) : "זה המהלך של הקו.") : "") + "</div>";
+      h += '<div class="row"><button type="button" class="btn primary" id="qNext">' + (Q.i + 1 >= Q.qs.length ? "לתוצאה" : "לשאלה הבאה") + "</button></div>";
+    }
+    return h + "</div>" + hookCard();
   }
   function renderPanel() {
     const panel = $("panel");
-    let h = "";
-    if (S.mode === "study") {
-      h = noteCard() + ideasCard() + '<div class="card sheet" id="sheet"></div>';
-    } else {
-      const pr = S.pr; const b = B(); const sideName = pr.side === "w" ? "הלבן" : "השחור", sideIn = pr.side === "w" ? "בלבן" : "בשחור";
-      let st;
-      if (pr.done) {
-        const p = progress[S.line.id];
-        st = '<div class="card status win"><div class="big">' + (pr.mistakes === 0 ? "מושלם! הקו הושלם בלי טעויות." : "הקו הושלם.") + '</div><div class="sub">' +
-          (pr.mistakes === 0 ? "הקו מסומן כנלמד." : "היו " + pr.mistakes + " טעויות. נסו שוב כדי לסמן את הקו כנלמד בלי טעויות.") +
-          '</div><div class="stats"><span>טעויות <b>' + pr.mistakes + '</b></span><span>הכי טוב <b>' + (p ? p.best : pr.mistakes) + "</b></span></div>" +
-          '<div class="row"><button type="button" class="btn primary" id="pNext">לקו הבא</button><button type="button" class="btn" id="pAgain">שוב</button><button type="button" class="btn" id="pStudy">לימוד הקו</button></div></div>';
-      } else {
-        const turn = userTurn();
-        const m = S.msg || {};
-        const kind = m.kind === "no" ? " no" : m.kind === "ok" && !turn ? " ok" : "";
-        const big = pr.waiting ? "היריב משחק..." : turn ? (m.kind === "no" ? m.big : "תורך: מצאו את המהלך של " + sideName) : m.big;
-        const sub = turn ? (m.kind === "no" ? m.sub : (S.idx > 0 && m.kind === "ok" ? fmt(m.big) + ". " : "") + "גררו או לחצו על כלי ואז על המשבצת.") : "";
-        st = '<div class="card status' + kind + '"><h4>תרגול · אתם משחקים ' + sideIn + '</h4><div class="big">' + fmt(big) + '</div><div class="sub">' + sub + "</div>" +
-          '<div class="stats"><span>מהלך <b>' + Math.min(S.idx + 1, b.plies.length) + "/" + b.plies.length + "</b></span><span>טעויות <b>" + pr.mistakes + "</b></span></div>" +
-          '<div class="row"><button type="button" class="btn" id="pHint"' + (turn ? "" : " disabled") + '>רמז</button><button type="button" class="btn" id="pReveal"' + (turn ? "" : " disabled") +
-          '>הראו את המהלך</button><button type="button" class="btn" id="pRestart">מההתחלה</button></div></div>';
-      }
-      h = st + (S.idx > 0 ? noteCard() : ideasCard()) + '<div class="card sheet" id="sheet"></div>';
-    }
-    panel.innerHTML = h;
+    panel.innerHTML = S.mode === "study" ? panelStudy() : S.mode === "quiz" ? panelQuiz() : panelPractice();
+    panel.querySelectorAll("[data-go]").forEach((b) => (b.onclick = () => setMode(b.dataset.go)));
+    panel.querySelectorAll(".opt").forEach((b) => (b.onclick = () => answer(+b.dataset.k)));
     const on = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
-    on("pNext", nextLine); on("pAgain", startPractice); on("pStudy", () => setMode("study")); on("pRestart", startPractice);
-    on("pReveal", reveal);
-    on("pHint", () => { if (userTurn()) { S.pr.hint = true; const exp = B().plies[S.idx]; select(exp.from); renderBoard(); } });
+    on("pNext", nextLine); on("pHint", hint); on("pReveal", reveal); on("qNext", nextQ);
+    on("sNext", sessionNext); on("sDone", () => { S.session = null; renderHead(); renderSide(); renderPanel(); });
+    const sk = $("skipChk"); if (sk) sk.onchange = () => { G.skip = sk.checked; persist(); };
     renderSheet();
   }
   function renderSheet() {
@@ -1054,35 +1502,49 @@ function parsePgn(text) {
     const shown = S.mode === "study" ? n : S.idx;
     if (!shown) { el.innerHTML = '<h4>טופס המהלכים</h4><div class="empty-sheet">המהלכים יופיעו כאן.</div>'; return; }
     let rows = "";
+    const br = S.line.branch;
     for (let i = 0; i < shown; i += 2) {
       const cell = (j) => {
         if (j >= shown) return "<td></td>";
         const p = b.plies[j];
         const cls = "m" + (j === S.idx - 1 ? " cur" : "") + (p.c ? " has" : "") + (S.mode === "study" && j >= S.idx ? " future" : "");
-        return '<td><button type="button" class="' + cls + '" data-i="' + (j + 1) + '">' + esc(fig(p.san)) + (p.nag ? '<span class="nag">' + esc(p.nag) + "</span>" : "") + "</button></td>";
+        return '<td><button type="button" class="' + cls + '" data-i="' + (j + 1) + '">' + esc(p.san) + (p.nag ? '<span class="nag">' + esc(p.nag) + "</span>" : "") + "</button></td>";
       };
-      rows += '<tr><td class="n">' + (i / 2 + 1) + ".</td>" + cell(i) + cell(i + 1) + "</tr>";
+      const isBr = br > 0 && (br === i || br === i + 1);
+      rows += '<tr' + (isBr ? ' class="br"' : "") + '><td class="n">' + (i / 2 + 1) + ".</td>" + cell(i) + cell(i + 1) + "</tr>";
     }
-    el.innerHTML = '<h4>טופס המהלכים</h4><div class="sheet-body" id="sheetBody"><table>' + rows + "</table></div>";
+    el.innerHTML = '<h4>טופס המהלכים</h4><div class="sheet-body" id="sheetBody"><table>' + rows + "</table></div>" +
+      (br > 0 && shown > br ? '<div class="legend">הקו המקווקו: כאן הקו נפרד משאר הקווים. • = יש הסבר למהלך.</div>' : "");
     if (S.mode === "study") el.querySelectorAll(".m").forEach((m) => (m.onclick = () => go(+m.dataset.i, +m.dataset.i === S.idx + 1)));
     const cur = el.querySelector(".m.cur"); const body = $("sheetBody");
-    if (cur && body) { const top = cur.offsetTop - body.clientHeight / 2; body.scrollTop = Math.max(0, top); }
+    if (cur && body) body.scrollTop = Math.max(0, cur.offsetTop - body.clientHeight / 2);
   }
-  function renderAll() { renderHead(); renderBoard(); renderPanel(); renderNav(); renderTabs(); }
+  function renderSound() {
+    const b = $("soundBtn"); b.setAttribute("aria-pressed", G.sound);
+    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/>' + (G.sound ? '<path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>' : '<path d="M17 9l5 6M22 9l-5 6"/>') + '</svg><span class="lbl">' + (G.sound ? "צלילים" : "בלי צלילים") + "</span>";
+  }
+  $("soundBtn").onclick = () => { G.sound = !G.sound; persist(); renderSound(); if (G.sound) sfx.ok(); };
+  function renderAll() { renderHead(); renderSteps(); renderBoard(); renderPanel(); renderNav(); renderTabs(); }
 
-  // ---------- drawer ----------
+  // ---------- intro & drawer ----------
+  function openIntro() { $("intro").hidden = false; $("introGo").focus(); }
+  function closeIntro() { if ($("intro").hidden) return; $("intro").hidden = true; G.intro = true; persist(); }
+  $("helpBtn").onclick = openIntro;
+  $("introGo").onclick = closeIntro;
+  $("intro").addEventListener("click", (e) => { if (e.target === $("intro")) closeIntro(); });
   $("drawerBtn").onclick = () => document.body.classList.add("drawer");
   $("scrim").onclick = () => document.body.classList.remove("drawer");
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.body.classList.remove("drawer"); });
 
   // ---------- boot ----------
   function start(data) {
+    renderSound();
     const hash = (location.hash || "").slice(1);
     const id = (data && data.line) || (LINES[hash] ? hash : null) || load("oo-last", null);
     const ln = LINES[id] || OPENINGS[0].all[0];
-    S.op = ln.op; S.mode = "study"; renderTabs();
-    selectLine(ln.id);
-    if (data && data.idx && S.mode === "study") go(data.idx);
+    S.op = ln.op;
+    selectLine(ln.id, "study");
+    if (data && data.idx) go(data.idx);
+    if (!G.intro) openIntro();
   }
   window.claude && window.claude.hot && window.claude.hot.snapshot && window.claude.hot.snapshot(() => ({ line: S.line && S.line.id, idx: S.mode === "study" ? S.idx : 0 }));
   if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(start);
