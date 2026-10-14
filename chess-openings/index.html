@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>קארו-קאן והאיטלקית</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a club-tournament table. Lines list on the right, the board in the middle, the score sheet on the left. */
+:root {
+  --bg: #e9eee8;
+  --surface: #f9fbf8;
+  --raised: #ffffff;
+  --ink: #18211c;
+  --muted: #56645b;
+  --line: #ccd6ce;
+  --accent: #8f6300;
+  --accent-soft: #f3e6c4;
+  --good: #23784a;
+  --good-soft: #dcefe2;
+  --bad: #b0352f;
+  --bad-soft: #f6dcd9;
+  --sq-light: #e7e5cd;
+  --sq-dark: #789862;
+  --sq-hl: rgba(246, 210, 70, .6);
+  --sq-sel: rgba(255, 216, 79, .7);
+  --arrow: rgba(26, 110, 64, .78);
+  --arrow-hint: rgba(214, 140, 0, .9);
+  --shadow: 0 1px 2px rgba(20, 40, 28, .08), 0 8px 24px rgba(20, 40, 28, .08);
+  --f-display: "Frank Ruhl Libre", "David Libre", "Times New Roman", serif;
+  --f-body: "IBM Plex Sans Hebrew", "Assistant", "Segoe UI", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111814; --surface: #18211c; --raised: #1f2a24; --ink: #e5ece7; --muted: #9db0a4; --line: #2e3c34;
+    --accent: #e3b04b; --accent-soft: #3a3020; --good: #63c48c; --good-soft: #193526; --bad: #f07b72; --bad-soft: #3d1f1d;
+    --sq-light: #d9d7bd; --sq-dark: #6a8a55; --arrow: rgba(40, 150, 90, .85);
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111814; --surface: #18211c; --raised: #1f2a24; --ink: #e5ece7; --muted: #9db0a4; --line: #2e3c34;
+  --accent: #e3b04b; --accent-soft: #3a3020; --good: #63c48c; --good-soft: #193526; --bad: #f07b72; --bad-soft: #3d1f1d;
+  --sq-light: #d9d7bd; --sq-dark: #6a8a55; --arrow: rgba(40, 150, 90, .85);
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 32px;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.san { font-family: var(--f-mono); font-weight: 500; font-size: .92em; white-space: nowrap; unicode-bidi: isolate; }
+
+/* Header */
+.top { max-width: 1440px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding-block: 18px 14px; }
+.brand { display: flex; flex-direction: column; gap: 0; margin-inline-end: auto; }
+.brand h1 { font-family: var(--f-display); font-weight: 900; font-size: 30px; line-height: 1.1; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+.brand p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab {
+  display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 16px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--surface); text-align: start; min-width: 0;
+}
+.tab .ico { width: 34px; height: 34px; background-size: 100%; flex: none; }
+.tab b { display: block; font-family: var(--f-display); font-size: 18px; font-weight: 700; line-height: 1.2; }
+.tab small { display: block; color: var(--muted); font-size: 12.5px; }
+.tab[aria-pressed="true"] { border-color: var(--ink); background: var(--raised); box-shadow: var(--shadow); }
+
+/* Main grid */
+.wrap { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 310px minmax(0, 1fr) 370px; gap: 20px; align-items: start; }
+.side, .panel { min-width: 0; }
+.side { position: sticky; top: env(safe-area-inset-top, 0px); max-height: 100vh; overflow-y: auto; padding-bottom: 12px; scrollbar-width: thin; }
+
+/* Sidebar */
+.about { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.about h2 { margin: 0; font-family: var(--f-display); font-size: 21px; }
+.about .mv { display: inline-block; margin-top: 2px; color: var(--accent); }
+.about p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+.about details { margin-top: 8px; }
+.about summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.about ul { margin: 6px 0 0; padding-inline-start: 18px; font-size: 14px; display: grid; gap: 4px; }
+.prog { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--good); border-radius: 3px; transition: width .3s; }
+.rand { margin-top: 10px; width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--accent); background: transparent; color: var(--accent); font-weight: 600; }
+.rand:hover { background: var(--accent-soft); }
+.group { margin-top: 18px; }
+.group h3 { margin: 0 4px 2px; font-size: 12px; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.group .gb { margin: 0 4px 6px; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.ln {
+  width: 100%; display: grid; grid-template-columns: 18px minmax(0,1fr) auto; align-items: center; gap: 8px; padding: 7px 8px;
+  border: 0; border-radius: 8px; background: transparent; text-align: start; font-size: 14px; line-height: 1.35;
+}
+.ln:hover { background: var(--surface); }
+.ln[aria-current="true"] { background: var(--raised); box-shadow: inset 3px 0 0 var(--accent), var(--shadow); }
+.ln .st { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 10px; }
+.ln .st.done { border-color: var(--good); color: var(--good); }
+.ln .st.clean { background: var(--good); border-color: var(--good); color: var(--surface); }
+.ln .eco { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.ln .tag { display: inline-block; margin-inline-start: 6px; font-size: 11px; padding: 0 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-weight: 600; vertical-align: 1px; }
+
+/* Board column */
+.stage { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.lhead { width: min(100%, 640px); display: flex; flex-direction: column; gap: 2px; }
+.lhead .crumb { font-size: 12.5px; color: var(--muted); }
+.lhead h2 { margin: 0; font-family: var(--f-display); font-size: 26px; line-height: 1.2; font-weight: 700; text-wrap: balance; }
+.lhead p { margin: 2px 0 0; color: var(--muted); font-size: 14.5px; }
+.drawer-btn { display: none; align-self: flex-start; margin-bottom: 6px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 14px; }
+.modes { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.modes button { border: 0; background: transparent; padding: 7px 18px; font-weight: 600; font-size: 14px; color: var(--muted); }
+.modes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.toolbar { width: min(100%, 640px); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.board-wrap { width: min(100%, 640px, calc(100vh - 300px)); min-width: min(100%, 300px); position: relative; }
+.board {
+  direction: ltr; display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; aspect-ratio: 1; max-width: 100%;
+  border-radius: 6px; overflow: hidden; box-shadow: var(--shadow), 0 0 0 1px var(--line); touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.board.shake { animation: shake .32s; }
+@keyframes shake { 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
+.sq { position: relative; background: var(--sq-light); }
+.sq.d { background: var(--sq-dark); }
+.sq.hl::before, .sq.sel::before, .sq.bad::before { content: ""; position: absolute; inset: 0; background: var(--sq-hl); }
+.sq.sel::before { background: var(--sq-sel); }
+.sq.bad::before { background: rgba(220, 50, 40, .55); }
+.sq.chk { background-image: radial-gradient(circle, rgba(255,40,30,.95) 0%, rgba(230,30,20,.55) 40%, rgba(200,0,0,0) 72%); }
+.sq .pc { position: absolute; inset: 0; background-size: 100%; z-index: 2; }
+.sq.dragfrom .pc { opacity: .3; }
+.sq.dot::after { content: ""; position: absolute; inset: 37%; border-radius: 50%; background: rgba(20, 50, 30, .3); z-index: 3; }
+.sq.dot.cap::after { inset: 4%; background: transparent; border: 5px solid rgba(20, 50, 30, .3); }
+.co { position: absolute; font: 600 11px/1 var(--f-mono); z-index: 1; pointer-events: none; color: var(--sq-dark); }
+.sq.d .co { color: var(--sq-light); }
+.co.r { top: 3px; left: 3px; }
+.co.f { bottom: 3px; right: 4px; }
+.arrows { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.ghost { position: fixed; z-index: 50; pointer-events: none; background-size: 100%; transform: translate(-50%, -50%); filter: drop-shadow(0 6px 8px rgba(0,0,0,.3)); }
+
+.nav { display: flex; gap: 6px; direction: ltr; }
+.nav button, .tool {
+  min-width: 44px; height: 40px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; font-size: 15px;
+}
+.nav button:hover:not(:disabled), .tool:hover { background: var(--raised); }
+.nav button:disabled { opacity: .35; cursor: default; }
+.nav svg, .tool svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.counter { font: 500 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; min-width: 70px; text-align: center; direction: ltr; }
+
+/* Panel */
+.panel { display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.card h4 { margin: 0 0 6px; font-size: 12px; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.note { min-height: 128px; }
+.note .mvl { font: 600 20px var(--f-mono); direction: ltr; text-align: right; }
+.note .mvl .nag { color: var(--accent); }
+.note .txt { margin: 6px 0 0; font-size: 15.5px; line-height: 1.65; }
+.note .txt.empty { color: var(--muted); }
+.ideas ul { margin: 0; padding-inline-start: 18px; display: grid; gap: 5px; font-size: 14.5px; }
+.status { border-width: 1px; }
+.status.ok { border-color: var(--good); background: var(--good-soft); }
+.status.no { border-color: var(--bad); background: var(--bad-soft); }
+.status.win { border-color: var(--good); background: var(--good-soft); }
+.status .big { font-family: var(--f-display); font-size: 21px; font-weight: 700; line-height: 1.3; }
+.status .sub { margin-top: 4px; font-size: 14.5px; }
+.status .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); font-weight: 600; font-size: 14px; }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn:disabled { opacity: .45; cursor: default; }
+.stats { display: flex; gap: 18px; margin-top: 10px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stats b { color: var(--ink); font-size: 15px; }
+
+/* Score sheet */
+.sheet { padding: 0; overflow: hidden; }
+.sheet h4 { padding: 12px 16px 0; }
+.sheet-body { position: relative; max-height: 340px; overflow-y: auto; padding: 4px 8px 10px; direction: ltr; }
+.sheet table { width: 100%; border-collapse: collapse; font: 500 14px var(--f-mono); font-variant-numeric: tabular-nums; }
+.sheet td { padding: 2px 6px; height: 28px; }
+.sheet td.n { width: 34px; color: var(--muted); text-align: right; border-right: 1px solid var(--line); }
+.sheet .m { display: inline-block; padding: 1px 6px; border-radius: 5px; cursor: pointer; border: 0; background: transparent; font: inherit; }
+.sheet .m:hover { background: var(--bg); }
+.sheet .m.cur { background: var(--ink); color: var(--bg); }
+.sheet .m.has::after { content: "•"; color: var(--accent); margin-left: 3px; }
+.sheet .m.cur.has::after { color: var(--accent-soft); }
+.sheet .m .nag { color: var(--accent); }
+.sheet .m.cur .nag { color: inherit; }
+.sheet .m.future { color: var(--muted); opacity: .55; }
+.empty-sheet { padding: 10px 16px 14px; color: var(--muted); font-size: 14px; direction: rtl; }
+.kbd { font-size: 12.5px; color: var(--muted); }
+.kbd kbd { font: 500 11px var(--f-mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--raised); }
+
+.scrim { display: none; }
+.err { max-width: 640px; margin: 40px auto; padding: 16px; border: 1px solid var(--bad); background: var(--bad-soft); border-radius: 12px; }
+
+@media (max-width: 1240px) {
+  .wrap { grid-template-columns: minmax(0, 1fr) 340px; }
+  .side {
+    position: fixed; top: 0; bottom: 0; right: 0; width: min(360px, 88vw); max-height: none; z-index: 40; background: var(--bg);
+    padding: calc(16px + env(safe-area-inset-top, 0px)) 14px calc(16px + env(safe-area-inset-bottom, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px));
+    box-shadow: -8px 0 30px rgba(0,0,0,.25); transform: translateX(105%); transition: transform .22s ease; visibility: hidden;
+  }
+  body.drawer .side { transform: none; visibility: visible; }
+  body.drawer .scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 39; }
+  .drawer-btn { display: inline-flex; gap: 6px; align-items: center; }
+}
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); }
+  .board-wrap { width: min(100%, 560px); }
+  .brand h1 { font-size: 25px; }
+  .tab { flex: 1 1 150px; }
+  .lhead h2 { font-size: 22px; }
+  .note { min-height: 0; }
+  .kbd { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .side, .bar i { transition: none; }
+  .board.shake { animation: none; }
+}
+/* Chess pieces: Colin M.L. Burnett (cburnett), via lichess chessground */
+.pc-wp{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PHBhdGggZD0iTTIyLjUgOWMtMi4yMSAwLTQgMS43OS00IDQgMCAuODkuMjkgMS43MS43OCAyLjM4QzE3LjMzIDE2LjUgMTYgMTguNTkgMTYgMjFjMCAyLjAzLjk0IDMuODQgMi40MSA1LjAzLTMgMS4wNi03LjQxIDUuNTUtNy40MSAxMy40N2gyM2MwLTcuOTItNC40MS0xMi40MS03LjQxLTEzLjQ3IDEuNDctMS4xOSAyLjQxLTMgMi40MS01LjAzIDAtMi40MS0xLjMzLTQuNS0zLjI4LTUuNjIuNDktLjY3Ljc4LTEuNDkuNzgtMi4zOCAwLTIuMjEtMS43OS00LTQtNHoiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==")}
+.pc-wb{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxnIGZpbGw9IiNmZmYiIHN0cm9rZS1saW5lY2FwPSJidXR0Ij48cGF0aCBkPSJNOSAzNmMzLjM5LS45NyAxMC4xMS40MyAxMy41LTIgMy4zOSAyLjQzIDEwLjExIDEuMDMgMTMuNSAyIDAgMCAxLjY1LjU0IDMgMi0uNjguOTctMS42NS45OS0zIC41LTMuMzktLjk3LTEwLjExLjQ2LTEzLjUtMS0zLjM5IDEuNDYtMTAuMTEuMDMtMTMuNSAxLTEuMzU0LjQ5LTIuMzIzLjQ3LTMtLjUgMS4zNTQtMS45NCAzLTIgMy0yeiIvPjxwYXRoIGQ9Ik0xNSAzMmMyLjUgMi41IDEyLjUgMi41IDE1IDAgLjUtMS41IDAtMiAwLTIgMC0yLjUtMi41LTQtMi41LTQgNS41LTEuNSA2LTExLjUtNS0xNS41LTExIDQtMTAuNSAxNC01IDE1LjUgMCAwLTIuNSAxLjUtMi41IDQgMCAwLS41LjUgMCAyeiIvPjxwYXRoIGQ9Ik0yNSA4YTIuNSAyLjUgMCAxIDEtNSAwIDIuNSAyLjUgMCAxIDEgNSAweiIvPjwvZz48cGF0aCBkPSJNMTcuNSAyNmgxME0xNSAzMGgxNW0tNy41LTE0LjV2NU0yMCAxOGg1IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIi8+PC9nPjwvc3ZnPg==")}
+.pc-wn{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMiAxMGMxMC41IDEgMTYuNSA4IDE2IDI5SDE1YzAtOSAxMC02LjUgOC0yMSIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0yNCAxOGMuMzggMi45MS01LjU1IDcuMzctOCA5LTMgMi0yLjgyIDQuMzQtNSA0LTEuMDQyLS45NCAxLjQxLTMuMDQgMC0zLTEgMCAuMTkgMS4yMy0xIDItMSAwLTQuMDAzIDEtNC00IDAtMiA2LTEyIDYtMTJzMS44OS0xLjkgMi0zLjVjLS43My0uOTk0LS41LTItLjUtMyAxLTEgMyAyLjUgMyAyLjVoMnMuNzgtMS45OTIgMi41LTNjMSAwIDEgMyAxIDMiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNOS41IDI1LjVhLjUuNSAwIDEgMS0xIDAgLjUuNSAwIDEgMSAxIDB6bTUuNDMzLTkuNzVhLjUgMS41IDMwIDEgMS0uODY2LS41LjUgMS41IDMwIDEgMSAuODY2LjV6IiBmaWxsPSIjMDAwIi8+PC9nPjwvc3ZnPg==")}
+.pc-wr{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik05IDM5aDI3di0zSDl2M3ptMy0zdi00aDIxdjRIMTJ6bS0xLTIyVjloNHYyaDVWOWg1djJoNVY5aDR2NSIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiLz48cGF0aCBkPSJNMzQgMTRsLTMgM0gxNGwtMy0zIi8+PHBhdGggZD0iTTMxIDE3djEyLjVIMTRWMTciIHN0cm9rZS1saW5lY2FwPSJidXR0IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIi8+PHBhdGggZD0iTTMxIDI5LjVsMS41IDIuNWgtMjBsMS41LTIuNSIvPjxwYXRoIGQ9Ik0xMSAxNGgyMyIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIvPjwvZz48L3N2Zz4=")}
+.pc-wq{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbD0iI2ZmZiIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik04IDEyYTIgMiAwIDEgMS00IDAgMiAyIDAgMSAxIDQgMHptMTYuNS00LjVhMiAyIDAgMSAxLTQgMCAyIDIgMCAxIDEgNCAwek00MSAxMmEyIDIgMCAxIDEtNCAwIDIgMiAwIDEgMSA0IDB6TTE2IDguNWEyIDIgMCAxIDEtNCAwIDIgMiAwIDEgMSA0IDB6TTMzIDlhMiAyIDAgMSAxLTQgMCAyIDIgMCAxIDEgNCAweiIvPjxwYXRoIGQ9Ik05IDI2YzguNS0xLjUgMjEtMS41IDI3IDBsMi0xMi03IDExVjExbC01LjUgMTMuNS0zLTE1LTMgMTUtNS41LTE0VjI1TDcgMTRsMiAxMnoiIHN0cm9rZS1saW5lY2FwPSJidXR0Ii8+PHBhdGggZD0iTTkgMjZjMCAyIDEuNSAyIDIuNSA0IDEgMS41IDEgMSAuNSAzLjUtMS41IDEtMS41IDIuNS0xLjUgMi41LTEuNSAxLjUuNSAyLjUuNSAyLjUgNi41IDEgMTYuNSAxIDIzIDAgMCAwIDEuNS0xIDAtMi41IDAgMCAuNS0xLjUtMS0yLjUtLjUtMi41LS41LTIgLjUtMy41IDEtMiAyLjUtMiAyLjUtNC04LjUtMS41LTE4LjUtMS41LTI3IDB6IiBzdHJva2UtbGluZWNhcD0iYnV0dCIvPjxwYXRoIGQ9Ik0xMS41IDMwYzMuNS0xIDE4LjUtMSAyMiAwTTEyIDMzLjVjNi0xIDE1LTEgMjEgMCIgZmlsbD0ibm9uZSIvPjwvZz48L3N2Zz4=")}
+.pc-wk{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMi41IDExLjYzVjZNMjAgOGg1IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIi8+PHBhdGggZD0iTTIyLjUgMjVzNC41LTcuNSAzLTEwLjVjMCAwLTEtMi41LTMtMi41cy0zIDIuNS0zIDIuNWMtMS41IDMgMyAxMC41IDMgMTAuNSIgZmlsbD0iI2ZmZiIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiLz48cGF0aCBkPSJNMTEuNSAzN2M1LjUgMy41IDE1LjUgMy41IDIxIDB2LTdzOS00LjUgNi0xMC41Yy00LTYuNS0xMy41LTMuNS0xNiA0VjI3di0zLjVjLTMuNS03LjUtMTMtMTAuNS0xNi00LTMgNiA1IDEwIDUgMTBWMzd6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTExLjUgMzBjNS41LTMgMTUuNS0zIDIxIDBtLTIxIDMuNWM1LjUtMyAxNS41LTMgMjEgMG0tMjEgMy41YzUuNS0zIDE1LjUtMyAyMSAwIi8+PC9nPjwvc3ZnPg==")}
+.pc-bp{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PHBhdGggZD0iTTIyLjUgOWMtMi4yMSAwLTQgMS43OS00IDQgMCAuODkuMjkgMS43MS43OCAyLjM4QzE3LjMzIDE2LjUgMTYgMTguNTkgMTYgMjFjMCAyLjAzLjk0IDMuODQgMi40MSA1LjAzLTMgMS4wNi03LjQxIDUuNTUtNy40MSAxMy40N2gyM2MwLTcuOTItNC40MS0xMi40MS03LjQxLTEzLjQ3IDEuNDctMS4xOSAyLjQxLTMgMi40MS01LjAzIDAtMi40MS0xLjMzLTQuNS0zLjI4LTUuNjIuNDktLjY3Ljc4LTEuNDkuNzgtMi4zOCAwLTIuMjEtMS43OS00LTQtNHoiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==")}
+.pc-bb{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxnIGZpbGw9IiMwMDAiIHN0cm9rZS1saW5lY2FwPSJidXR0Ij48cGF0aCBkPSJNOSAzNmMzLjM5LS45NyAxMC4xMS40MyAxMy41LTIgMy4zOSAyLjQzIDEwLjExIDEuMDMgMTMuNSAyIDAgMCAxLjY1LjU0IDMgMi0uNjguOTctMS42NS45OS0zIC41LTMuMzktLjk3LTEwLjExLjQ2LTEzLjUtMS0zLjM5IDEuNDYtMTAuMTEuMDMtMTMuNSAxLTEuMzU0LjQ5LTIuMzIzLjQ3LTMtLjUgMS4zNTQtMS45NCAzLTIgMy0yeiIvPjxwYXRoIGQ9Ik0xNSAzMmMyLjUgMi41IDEyLjUgMi41IDE1IDAgLjUtMS41IDAtMiAwLTIgMC0yLjUtMi41LTQtMi41LTQgNS41LTEuNSA2LTExLjUtNS0xNS41LTExIDQtMTAuNSAxNC01IDE1LjUgMCAwLTIuNSAxLjUtMi41IDQgMCAwLS41LjUgMCAyeiIvPjxwYXRoIGQ9Ik0yNSA4YTIuNSAyLjUgMCAxIDEtNSAwIDIuNSAyLjUgMCAxIDEgNSAweiIvPjwvZz48cGF0aCBkPSJNMTcuNSAyNmgxME0xNSAzMGgxNW0tNy41LTE0LjV2NU0yMCAxOGg1IiBzdHJva2U9IiNlY2VjZWMiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiLz48L2c+PC9zdmc+")}
+.pc-bn{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMiAxMGMxMC41IDEgMTYuNSA4IDE2IDI5SDE1YzAtOSAxMC02LjUgOC0yMSIgZmlsbD0iIzAwMCIvPjxwYXRoIGQ9Ik0yNCAxOGMuMzggMi45MS01LjU1IDcuMzctOCA5LTMgMi0yLjgyIDQuMzQtNSA0LTEuMDQyLS45NCAxLjQxLTMuMDQgMC0zLTEgMCAuMTkgMS4yMy0xIDItMSAwLTQuMDAzIDEtNC00IDAtMiA2LTEyIDYtMTJzMS44OS0xLjkgMi0zLjVjLS43My0uOTk0LS41LTItLjUtMyAxLTEgMyAyLjUgMyAyLjVoMnMuNzgtMS45OTIgMi41LTNjMSAwIDEgMyAxIDMiIGZpbGw9IiMwMDAiLz48cGF0aCBkPSJNOS41IDI1LjVhLjUuNSAwIDEgMS0xIDAgLjUuNSAwIDEgMSAxIDB6bTUuNDMzLTkuNzVhLjUgMS41IDMwIDEgMS0uODY2LS41LjUgMS41IDMwIDEgMSAuODY2LjV6IiBmaWxsPSIjZWNlY2VjIiBzdHJva2U9IiNlY2VjZWMiLz48cGF0aCBkPSJNMjQuNTUgMTAuNGwtLjQ1IDEuNDUuNS4xNWMzLjE1IDEgNS42NSAyLjQ5IDcuOSA2Ljc1UzM1Ljc1IDI5LjA2IDM1LjI1IDM5bC0uMDUuNWgyLjI1bC4wNS0uNWMuNS0xMC4wNi0uODgtMTYuODUtMy4yNS0yMS4zNC0yLjM3LTQuNDktNS43OS02LjY0LTkuMTktNy4xNmwtLjUxLS4xeiIgZmlsbD0iI2VjZWNlYyIgc3Ryb2tlPSJub25lIi8+PC9nPjwvc3ZnPg==")}
+.pc-br{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik05IDM5aDI3di0zSDl2M3ptMy41LTdsMS41LTIuNWgxN2wxLjUgMi41aC0yMHptLS41IDR2LTRoMjF2NEgxMnoiIHN0cm9rZS1saW5lY2FwPSJidXR0Ii8+PHBhdGggZD0iTTE0IDI5LjV2LTEzaDE3djEzSDE0eiIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiLz48cGF0aCBkPSJNMTQgMTYuNUwxMSAxNGgyM2wtMyAyLjVIMTR6TTExIDE0VjloNHYyaDVWOWg1djJoNVY5aDR2NUgxMXoiIHN0cm9rZS1saW5lY2FwPSJidXR0Ii8+PHBhdGggZD0iTTEyIDM1LjVoMjFtLTIwLTRoMTltLTE4LTJoMTdtLTE3LTEzaDE3TTExIDE0aDIzIiBmaWxsPSJub25lIiBzdHJva2U9IiNlY2VjZWMiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIvPjwvZz48L3N2Zz4=")}
+.pc-bq{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxnIHN0cm9rZT0ibm9uZSI+PGNpcmNsZSBjeD0iNiIgY3k9IjEyIiByPSIyLjc1Ii8+PGNpcmNsZSBjeD0iMTQiIGN5PSI5IiByPSIyLjc1Ii8+PGNpcmNsZSBjeD0iMjIuNSIgY3k9IjgiIHI9IjIuNzUiLz48Y2lyY2xlIGN4PSIzMSIgY3k9IjkiIHI9IjIuNzUiLz48Y2lyY2xlIGN4PSIzOSIgY3k9IjEyIiByPSIyLjc1Ii8+PC9nPjxwYXRoIGQ9Ik05IDI2YzguNS0xLjUgMjEtMS41IDI3IDBsMi41LTEyLjVMMzEgMjVsLS4zLTE0LjEtNS4yIDEzLjYtMy0xNC41LTMgMTQuNS01LjItMTMuNkwxNCAyNSA2LjUgMTMuNSA5IDI2eiIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiLz48cGF0aCBkPSJNOSAyNmMwIDIgMS41IDIgMi41IDQgMSAxLjUgMSAxIC41IDMuNS0xLjUgMS0xLjUgMi41LTEuNSAyLjUtMS41IDEuNS41IDIuNS41IDIuNSA2LjUgMSAxNi41IDEgMjMgMCAwIDAgMS41LTEgMC0yLjUgMCAwIC41LTEuNS0xLTIuNS0uNS0yLjUtLjUtMiAuNS0zLjUgMS0yIDIuNS0yIDIuNS00LTguNS0xLjUtMTguNS0xLjUtMjcgMHoiIHN0cm9rZS1saW5lY2FwPSJidXR0Ii8+PHBhdGggZD0iTTExIDM4LjVhMzUgMzUgMSAwIDAgMjMgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiLz48cGF0aCBkPSJNMTEgMjlhMzUgMzUgMSAwIDEgMjMgMG0tMjEuNSAyLjVoMjBtLTIxIDNhMzUgMzUgMSAwIDAgMjIgMG0tMjMgM2EzNSAzNSAxIDAgMCAyNCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiNlY2VjZWMiLz48L2c+PC9zdmc+")}
+.pc-bk{background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NSIgaGVpZ2h0PSI0NSI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0yMi41IDExLjYzVjYiIHN0cm9rZS1saW5lam9pbj0ibWl0ZXIiLz48cGF0aCBkPSJNMjIuNSAyNXM0LjUtNy41IDMtMTAuNWMwIDAtMS0yLjUtMy0yLjVzLTMgMi41LTMgMi41Yy0xLjUgMyAzIDEwLjUgMyAxMC41IiBmaWxsPSIjMDAwIiBzdHJva2UtbGluZWNhcD0iYnV0dCIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIvPjxwYXRoIGQ9Ik0xMS41IDM3YzUuNSAzLjUgMTUuNSAzLjUgMjEgMHYtN3M5LTQuNSA2LTEwLjVjLTQtNi41LTEzLjUtMy41LTE2IDRWMjd2LTMuNWMtMy41LTcuNS0xMy0xMC41LTE2LTQtMyA2IDUgMTAgNSAxMFYzN3oiIGZpbGw9IiMwMDAiLz48cGF0aCBkPSJNMjAgOGg1IiBzdHJva2UtbGluZWpvaW49Im1pdGVyIi8+PHBhdGggZD0iTTMyIDI5LjVzOC41LTQgNi4wMy05LjY1QzM0LjE1IDE0IDI1IDE4IDIyLjUgMjQuNWwuMDEgMi4xLS4wMS0yLjFDMjAgMTggOS45MDYgMTQgNi45OTcgMTkuODVjLTIuNDk3IDUuNjUgNC44NTMgOSA0Ljg1MyA5IiBzdHJva2U9IiNlY2VjZWMiLz48cGF0aCBkPSJNMTEuNSAzMGM1LjUtMyAxNS41LTMgMjEgMG0tMjEgMy41YzUuNS0zIDE1LjUtMyAyMSAwbS0yMSAzLjVjNS41LTMgMTUuNS0zIDIxIDAiIHN0cm9rZT0iI2VjZWNlYyIvPjwvZz48L3N2Zz4=")}
+
+</style>
+</head>
+<body>
+<div>
+
+<header class="top">
+  <div class="brand">
+    <h1>קארו-קאן והאיטלקית</h1>
+    <p>ספריית וריאציות עם לוח, הסברים ותרגול. כל הקווים נבדקו במנוע.</p>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="בחירת פתיחה"></nav>
+</header>
+
+<div class="wrap">
+  <aside class="side" id="side" aria-label="וריאציות"></aside>
+
+  <main class="stage">
+    <div class="lhead">
+      <button class="drawer-btn" id="drawerBtn" type="button" aria-controls="side">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        כל הווריאציות
+      </button>
+      <div class="crumb" id="crumb"></div>
+      <h2 id="lineName"></h2>
+      <p id="lineSum"></p>
+    </div>
+    <div class="toolbar">
+      <div class="modes" role="group" aria-label="מצב">
+        <button type="button" id="mStudy" aria-pressed="true">לימוד</button>
+        <button type="button" id="mPractice" aria-pressed="false">תרגול</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="tool" type="button" id="flipBtn" title="סיבוב הלוח" aria-label="סיבוב הלוח">
+          <svg viewBox="0 0 24 24"><path d="M7 4v14M7 18l-3-3M7 18l3-3M17 20V6M17 6l-3 3M17 6l3 3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="board-wrap" id="boardWrap">
+      <div class="board" id="board" role="grid" aria-label="לוח שחמט"></div>
+      <svg class="arrows" id="arrows" viewBox="0 0 800 800" aria-hidden="true"></svg>
+    </div>
+    <div class="toolbar" id="navBar">
+      <div class="nav" role="group" aria-label="ניווט במהלכים">
+        <button type="button" id="nStart" aria-label="להתחלה"><svg viewBox="0 0 24 24"><path d="M6 5v14M18 6l-8 6 8 6"/></svg></button>
+        <button type="button" id="nPrev" aria-label="מהלך קודם"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <span class="counter" id="counter"></span>
+        <button type="button" id="nNext" aria-label="מהלך הבא"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button type="button" id="nEnd" aria-label="לסוף"><svg viewBox="0 0 24 24"><path d="M18 5v14M6 6l8 6-8 6"/></svg></button>
+      </div>
+      <span class="kbd"><kbd>←</kbd> <kbd>→</kbd> במקלדת</span>
+    </div>
+  </main>
+
+  <section class="panel" id="panel" aria-live="polite"></section>
+</div>
+<div class="scrim" id="scrim"></div>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script>
+const OPENINGS = [
+{
+  id: "caro",
+  name: "קארו-קאן",
+  moves: "1.e4 c6",
+  side: "b",
+  tagline: "הגנה סולידית לשחור נגד 1.e4. קודם מכינים את d5, ואז נלחמים על המרכז בלי לחסום את הרץ הלבן.",
+  ideas: [
+    "1...c6 מכין את 2...d5. כך שחור תוקף את e4 עם רגלי מוגן.",
+    "הרץ של c8 יוצא החוצה (לרוב ל-f5 או g4) לפני ש-e6 סוגר אותו. זה ההבדל הגדול מההגנה הצרפתית.",
+    "מבנה הרגלים של שחור כמעט בלי חולשות, ולכן הסיומים טובים לשחור.",
+    "המהלכים החשובים לשבירת המרכז: ...c5 (נגד שרשרת רגלים) ו-...e5.",
+    "שחור לרוב מצריח קצר, אבל בקו הקלאסי הרבה פעמים המלכים בצדדים מנוגדים."
+  ],
+  groups: [
+  {
+    name: "וריאציית ההתקדמות (3.e5)",
+    blurb: "לבן תופס שטח עם e5. שחור מוציא את הרץ ל-f5 ותוקף את שרשרת הרגלים עם ...c5.",
+    lines: [
+    {
+      id: "adv-short", name: "מערך שורט: 4.Nf3 ו-5.Be2", eco: "B12",
+      summary: "הדרך הפופולרית ביותר של לבן. פיתוח פשוט, הצרחה, ומשחק איטי על השטח.",
+      ideas: ["לשבור עם ...c5 מוקדם", "פרש g8 הולך ל-e7 ומשם ל-c6 או f5", "להחליף את הפרש המרכזי של לבן כשאפשר"],
+      pgn: "1.e4 {לבן תופס את המרכז.} c6 {מכין את d5. הרץ של c8 נשאר חופשי.} 2.d4 d5 {תוקפים את e4 מיד.} 3.e5 {וריאציית ההתקדמות: לבן נועל את המרכז ותופס שטח.} Bf5 {הרץ יוצא לפני ...e6. בהגנה הצרפתית הוא היה נשאר כלוא.} 4.Nf3 e6 {פותח את הרץ של f8 ומחזק את d5.} 5.Be2 {המערך השקט של נייג'ל שורט: פיתוח והצרחה בלי סיבוכים.} c5 {המכה בבסיס השרשרת. זה הרעיון המרכזי של שחור בכל וריאציית ההתקדמות.} 6.Be3 {לבן מגן על d4 פעם נוספת.} cxd4 7.Nxd4 Ne7 {הפרש יוצא דרך e7 כדי לא לחסום את הרגלי של f.} 8.c4 {לבן תוקף את d5 ומנסה לפתוח את המשחק.} Nbc6 {הפרש השני לוחץ על הפרש ב-d4 ועל e5.} 9.Nxf5 Nxf5 {שחור מחזיר עם פרש פעיל שמכוון ל-e3.} 10.cxd5 Nxe3 {מחליפים את הרץ הטוב של לבן.} 11.fxe3 exd5 {עמדה שקולה. ללבן רגלים כפולים ב-e, לשחור רגלי מבודד ב-d5 אבל משחק חלק.}"
+    },
+    {
+      id: "adv-tal", name: "התקפת טל: 4.Nc3 e6 5.g4", eco: "B12",
+      summary: "הקו החד ביותר. לבן רודף אחרי הרץ עם רגלי האגף ותוקף בכוח.",
+      ideas: ["לשמור את הרץ באלכסון b1-h7", "לפגוע במרכז עם ...c5 בזמן שלבן מתקדם באגף", "לא להיבהל: הרגלים של לבן משאירים חולשות"],
+      pgn: "1.e4 c6 2.d4 d5 3.e5 Bf5 4.Nc3 {מגן על e4 ומכין את g4.} e6 5.g4 {לבן מתנפל על הרץ.} Bg6 {הרץ נסוג. הוא עדיין מכוון לאלכסון החשוב.} 6.Nge2 {הפרש מתכונן ל-f4 כדי לתקוף את הרץ שוב.} c5 {שוב המכה במרכז! כשלבן תוקף באגף, שחור תוקף באמצע.} 7.h4 h5 {עוצרים את h5 של לבן ויוצרים משבצת ל-Bh7.} 8.Nf4 Bh7 9.Nxh5 {לבן לוקח רגלי, אבל הפרש שלו רחוק מהמשחק.} cxd4 10.Qxd4 Nc6 {פיתוח עם טמפו על המלכה. לשחור משחק פעיל תמורת הרגלי.} 11.Qa4 Qb6 {לוחץ על b2 ועל f2. המלכה של שחור נכנסת למשחק.} 12.Rh3 O-O-O {שחור מצריח ארוך ומביא את הצריח לקו d הפתוח. עמדה חדה ושקולה.}"
+    },
+    {
+      id: "adv-h4", name: "4.h4: ההתקפה עם רגלי h", eco: "B12",
+      summary: "לבן מנסה להבריח את הרץ עם h4-h5. שחור עונה ב-...h5 ועוצר את זה.",
+      ideas: ["4...h5 עוצר את הרגלי, גם במחיר חולשה ב-g5", "לפתח את הפרש דרך e7", "...dxc4 ו-...Nd7 כשלבן פותח את המרכז"],
+      pgn: "1.e4 c6 2.d4 d5 3.e5 Bf5 4.h4 {לבן מאיים h5 שיגרש את הרץ.} h5 {עוצרים את הרגלי. משבצת g5 נחלשת, אבל הרץ נשאר יציב.} 5.c4 {לבן תוקף את d5.} e6 6.Nc3 Ne7 {הפרש בדרך ל-f5 או c6, ומגן על d5.} 7.Nge2 dxc4 {שחור לוקח רגלי ומחזיר אותו בזמן שהוא מתפתח.} 8.Ng3 Bg6 9.Bxc4 Nd7 {שחור מפתח ומתכונן ל-...Nb6 ו-...Nf5. עמדה מאוזנת.}"
+    },
+    {
+      id: "adv-c5", name: "3...c5: המכה הישירה", eco: "B12",
+      summary: "שחור משחק ...c5 מיד, גם במחיר טמפו. שיטה פחות מוכרת שמפתיעה יריבים.",
+      ideas: ["להחזיר את הרגלי ב-c5 מאוחר יותר", "לשחק ...Nge7-f5", "לתקוף את e5 עם ...f6 כשזה מתאים"],
+      pgn: "1.e4 c6 2.d4 d5 3.e5 c5 {שחור מוותר על טמפו כדי לפגוע במרכז מיד.} 4.dxc5 Nc6 {פיתוח ולחץ על e5.} 5.Bb5 e6 6.Be3 Ne7 {הפרש מ-g8 בדרך ל-f5, משם הוא לוחץ על הרץ ב-e3.} 7.c3 Bd7 {שחור מתכנן ...Nf5 ולקחת את c5 בחזרה.} 8.Nf3 Nf5 {הפרש פעיל וללבן קשה להחזיק את הרגלי הנוסף.}"
+    }
+    ]
+  },
+  {
+    name: "הווריאציה הקלאסית (4...Bf5)",
+    blurb: "3.Nc3 dxe4 4.Nxe4 Bf5. שחור מוציא את הרץ עם טמפו על הפרש. הקו המסורתי והאמין של הקארו-קאן.",
+    lines: [
+    {
+      id: "cls-main", name: "הקו הראשי: 6.h4 h6 7.Nf3", eco: "B19",
+      summary: "הקו התיאורטי ביותר. לבן משתמש ברגלי h כדי לחשוף את הרץ ומצריח ארוך.",
+      ideas: ["6...h6 כדי שהרץ יוכל לסגת ל-h7", "להחליף רצים ב-d3", "להצריח קצר, ואז לשחק ...c5 או ...Qd5"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 {מגן על e4.} dxe4 {שחור לוקח במרכז. זה הקו הקלאסי.} 4.Nxe4 Bf5 {הרץ יוצא עם טמפו על הפרש.} 5.Ng3 Bg6 {הרץ נשאר על האלכסון b1-h7.} 6.h4 {לבן מאיים h5 שילכוד את הרץ.} h6 {משאירים לרץ משבצת ב-h7.} 7.Nf3 Nd7 {עוצר את Ne5 שהיה תוקף את הרץ ב-g6.} 8.h5 Bh7 9.Bd3 Bxd3 {מחליפים את הרץ ולבן לא מקבל אלכסון התקפה.} 10.Qxd3 e6 11.Bd2 Ngf6 12.O-O-O {לבן מצריח ארוך. הרגלי ב-h5 חוסם את המלך של שחור.} Be7 13.Kb1 O-O {שחור מצריח קצר. המלכים בצדדים מנוגדים.} 14.Ne4 Nxe4 15.Qxe4 Nf6 {הפרש מגרש את המלכה.} 16.Qe2 Qd5 {המלכה במרכז והעמדה של שחור יציבה. התוכנית: ...c5 ו-...Rfd8.}"
+    },
+    {
+      id: "cls-noh4", name: "6.Nf3 Nd7 7.Bd3: בלי h4", eco: "B18",
+      summary: "לבן מוותר על h4 ומפתח בפשטות. שחור מחליף את הרץ ומקבל עמדה נוחה.",
+      ideas: ["להחליף את הרץ הלבן", "...Ngf6, ...Be7, הצרחה", "לשבור עם ...c5"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Bf5 5.Ng3 Bg6 6.Nf3 Nd7 {שומרים את המשבצת e5.} 7.Bd3 Bxd3 {בלי h4, ההחלפה הזו פשוטה ונוחה.} 8.Qxd3 e6 9.Bf4 Ngf6 10.O-O-O Be7 11.Kb1 O-O {שחור מסודר. אחר כך ...Qa5 או ...c5.}"
+    },
+    {
+      id: "cls-n1e2", name: "6.N1e2: הפרש בדרך ל-f4", eco: "B18",
+      summary: "לבן מתכנן Nf4 כדי לתפוס את הרץ. שחור עונה במכה מיידית במרכז.",
+      ideas: ["6...Nf6 ואז ...e5!", "להחליף מלכות אם לבן פותח את קו d", "פרש חזק ב-d5"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Bf5 5.Ng3 Bg6 6.N1e2 {הפרש מתכנן Nf4 ולתקוף את הרץ.} Nf6 7.Nf4 e5 {מכה במרכז! שחור מנצל את זה שהפרש הלבן התרחק.} 8.dxe5 Qxd1+ 9.Kxd1 Ng4 {החלפת מלכות. הפרש תוקף את e5 והמלך של לבן כבר לא יכול להצריח.} 10.Nxg6 hxg6 {קו h נפתח לצריח של שחור.} 11.Ke1 Nxe5 {שחור לקח בחזרה את הרגלי. עמדה שקולה ונוחה לשחור.}"
+    }
+    ]
+  },
+  {
+    name: "וריאציית קרפוב (4...Nd7)",
+    blurb: "שחור מכין ...Ngf6 כך שאם לבן יחליף, שחור יחזיר עם פרש ולא יקבל רגלים כפולים.",
+    lines: [
+    {
+      id: "kar-ng5", name: "5.Ng5: הקו החד", eco: "B17",
+      summary: "לבן מאיים על f7 ועל e6. צריך לדעת את הסדר המדויק, אחרת יש מלכודת מפורסמת.",
+      ideas: ["6...e6 7.N1f3 Bd6, לא ...h6 מוקדם", "...h6 רק אחרי שהפרש כבר לא יכול לקפוץ ל-e6", "...b6 ו-...Bb7 לפיתוח"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 {מכין את ...Ngf6.} 5.Ng5 {מהלך מוזר אבל מסוכן: מכוון ל-f7 ו-e6.} Ngf6 6.Bd3 e6 {מחזק את f7. עכשיו הרץ של d3 מכוון ל-h7.} 7.N1f3 Bd6 {המהלך הנכון! לא 7...h6?? בגלל 8.Nxe6.} 8.Qe2 h6 {עכשיו ...h6 בטוח, כי Nxe6 לא עובד.} 9.Ne4 Nxe4 10.Qxe4 Qc7 {מגן על הרץ ומכין ...b6 ו-...Bb7.} 11.O-O b6 12.Qg4 Kf8 {מהלך לא רגיל אבל מוכר: המלך מגן על g7 במקום להצריח.}"
+    },
+    {
+      id: "kar-bc4", name: "5.Bc4: הרץ מכוון ל-f7", eco: "B17",
+      summary: "לבן מכוון ל-f7 ומשחק Ng5 ו-Qe2. שחור מגרש את הרץ עם ...Nb6.",
+      ideas: ["...Nb6 עם טמפו על הרץ", "...h6 ו-...c5 לשחרור", "החזרת הרגלי ב-c5"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 5.Bc4 Ngf6 6.Ng5 {שוב לחץ על f7.} e6 7.Qe2 {מאיים Nxf7 ו-Nxe6.} Nb6 {מגרש את הרץ מ-c4.} 8.Bd3 h6 {מגרש גם את הפרש.} 9.N5f3 c5 {השבירה הטבעית.} 10.dxc5 Bxc5 11.Ne5 Nbd7 {מחליף את הפרש החזק של לבן.} 12.Ngf3 Qc7 {שחור מוכן להצריח. עמדה שקולה.}"
+    },
+    {
+      id: "kar-nf3", name: "5.Nf3: הקו השקט", eco: "B17",
+      summary: "לבן מפתח בפשטות. אחרי החלפת הפרשים לשחור עמדה סולידית מאוד.",
+      ideas: ["...Bg4 וחילוף על f3", "המלכה ל-d5", "פיתוח מהיר והצרחה"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 5.Nf3 Ngf6 6.Nxf6+ Nxf6 {בדיוק לשם כך שיחקנו ...Nd7: אין רגלים כפולים.} 7.c3 Bg4 {הרץ יוצא החוצה לפני ...e6.} 8.h3 Bxf3 9.Qxf3 Qd5 {מציע החלפת מלכות. בלי מלכות, למבנה של שחור אין חולשות.} 10.Be2 e6 11.O-O Bd6 {פיתוח והצרחה. עמדה יציבה.}"
+    }
+    ]
+  },
+  {
+    name: "וריאציות ...Nf6",
+    blurb: "4...Nf6 ואחרי 5.Nxf6+ שחור בוחר: לחזור עם רגלי g או רגלי e. שתי דרכים לקבל משחק פעיל יותר.",
+    lines: [
+    {
+      id: "bl-gxf6", name: "ברונשטיין-לרסן: 5...gxf6", eco: "B16",
+      summary: "שחור מסכים לרגלים כפולים ומקבל קו g פתוח לצריח. הגנה לוחמנית.",
+      ideas: ["קו g פתוח לצריח", "...Bf5 ו-...Qc7", "המלך יכול להצריח ארוך"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nf6 5.Nxf6+ gxf6 {רגלים כפולים, אבל קו g פתוח ושליטה ב-e5.} 6.c3 Bf5 7.Nf3 e6 8.g3 {לבן מתכונן להוציא את הרץ ל-g2.} h5 {שחור מאיים ...h4 לפתוח את קו h.} 9.Bg2 h4 10.O-O hxg3 11.hxg3 Nd7 {לשחור עמודות פתוחות לצריחים ומשחק נגד המלך.}"
+    },
+    {
+      id: "bl-exf6", name: "טרטקובר: 5...exf6", eco: "B15",
+      summary: "שחור מקבל רוב רגלים באגף המלך אבל פיתוח מהיר מאוד.",
+      ideas: ["פיתוח מהיר: ...Bd6, הצרחה, ...Re8", "צריח על קו e", "המלך בטוח מאוד"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nf6 5.Nxf6+ exf6 {פותח את הרץ של f8 ואת קו e.} 6.c3 Bd6 7.Bd3 O-O 8.Qc2 Re8+ {שח שמפריע ללבן להצריח בנוחות.} 9.Ne2 g6 {סוגר את האלכסון b1-h7 מול המלכה והרץ.} 10.O-O Nd7 11.Bh6 f5 {הרגלי סוגר את האלכסון של הרץ ב-d3.} 12.Qd2 Nf6 13.h3 Bc7 {הפרש בדרך ל-e4. עמדה סולידית ושקולה.}"
+    }
+    ]
+  },
+  {
+    name: "וריאציית החילופים ופנוב",
+    blurb: "3.exd5 cxd5. שני סוגי משחק: מבנה שקט עם 4.Bd3, או 4.c4 שמוביל לרגלי מבודד.",
+    lines: [
+    {
+      id: "ex-bd3", name: "החילופים: 4.Bd3", eco: "B13",
+      summary: "מבנה סימטרי ושקט. שחור עושה התקפת מיעוט באגף המלכה.",
+      ideas: ["...Bg4 לפני ...e6", "התקפת מיעוט: ...b5-b4", "להחליף את הרץ הטוב של לבן"],
+      pgn: "1.e4 c6 2.d4 d5 3.exd5 cxd5 4.Bd3 Nc6 5.c3 Nf6 6.Bf4 Bg4 {הרץ יוצא לפני ...e6.} 7.Qb3 {תוקף את b7.} Qd7 {המלכה מגנה על b7.} 8.Nd2 e6 9.Ngf3 Bxf3 {מחליפים כדי להפחית את הלחץ על e5.} 10.Nxf3 Bd6 11.Bxd6 Qxd6 12.O-O O-O 13.Rae1 Rab8 {מכין ...b5-b4. זו התקפת המיעוט.} 14.Ne5 b5 {שחור מתקדם באגף המלכה והעמדה מאוזנת.}"
+    },
+    {
+      id: "pn-e6", name: "פנוב-בוטווניק: 5...e6", eco: "B14",
+      summary: "שחור משאיר ללבן רגלי מבודד ב-d4 ומשחק נגדו.",
+      ideas: ["לחסום את הרגלי המבודד: פרש ב-d5", "להחליף כלים: כל חילוף עוזר לשחור", "בסיום הרגלי המבודד חלש"],
+      pgn: "1.e4 c6 2.d4 d5 3.exd5 cxd5 4.c4 {פנוב: לבן תוקף את d5.} Nf6 5.Nc3 e6 6.Nf3 Be7 7.cxd5 Nxd5 {לבן עם רגלי מבודד ב-d4.} 8.Bd3 Nc6 9.O-O O-O 10.Re1 Bf6 {לוחץ על d4. החוק: מול רגלי מבודד מחליפים כלים ומשחקים לסיום.} 11.Be4 Nce7 {הפרש בדרך ל-f5 או מגן על d5. עמדה שקולה.}"
+    },
+    {
+      id: "pn-nc6", name: "פנוב: 5...Nc6 6.Bg5", eco: "B13",
+      summary: "שחור מפתח את הפרש לחץ על d4. לבן מצמיד עם Bg5.",
+      ideas: ["לפתח ...e6 ו-...Be7", "...Ne4 להחלפות", "אם c5, לשבור עם ...b6"],
+      pgn: "1.e4 c6 2.d4 d5 3.exd5 cxd5 4.c4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Nf3 Be7 8.c5 {לבן נועל את אגף המלכה.} O-O 9.Bb5 Ne4 {מחליף את הרץ הלוחץ ואת הפרש.} 10.Bxe7 Nxe7 11.Qc2 Nxc3 12.bxc3 b6 {תוקף את שרשרת הרגלים של לבן. עמדה טובה לשחור.}"
+    },
+    {
+      id: "pn-g6", name: "פנוב: 5...g6", eco: "B14",
+      summary: "שחור מוציא את הרץ לפיאנקטו ומחזיר את הרגלי מאוחר יותר.",
+      ideas: ["רץ g7 לוחץ על d4", "להחזיר את הרגלי ב-d5", "...Nb6 ו-...Bf5"],
+      pgn: "1.e4 c6 2.d4 d5 3.exd5 cxd5 4.c4 Nf6 5.Nc3 g6 {הרץ יצא ל-g7 וילחץ על d4.} 6.Qb3 Bg7 7.cxd5 O-O {שחור מקריב רגלי זמנית.} 8.Be2 Nbd7 9.Bf3 Nb6 {לוחץ על d5. שחור ייקח את הרגלי בחזרה.} 10.Nge2 Bf5 {פיתוח עם לחץ. לשחור משחק טוב.}"
+    }
+    ]
+  },
+  {
+    name: "קווים צדדיים של לבן",
+    blurb: "פחות תיאוריה, אבל יריבים משחקים אותם הרבה. חשוב לדעת תוכנית ברורה.",
+    lines: [
+    {
+      id: "side-2kn", name: "שני הפרשים: 2.Nc3 d5 3.Nf3", eco: "B11",
+      summary: "לבן משאיר את d4 ומפתח פרשים. שחור מצמיד את הפרש ומחליף.",
+      ideas: ["...Bg4 והחלפה על f3", "מבנה ...e6 ו-...d4 או ...dxe4", "לבן מקבל את זוג הרצים, שחור מקבל מרכז"],
+      pgn: "1.e4 c6 2.Nc3 d5 3.Nf3 Bg4 {מצמיד את הפרש.} 4.h3 Bxf3 {לוקחים, כי נסיגה ל-h5 נותנת ללבן g4.} 5.Qxf3 Nf6 6.d3 e6 7.a3 Be7 8.g4 {לבן מתקיף באגף המלך.} O-O 9.g5 Nfd7 10.h4 d4 {סוגר את הפרש ב-c3 ומשיג שטח. שחור מתכנן ...Ne5.}"
+    },
+    {
+      id: "side-fantasy", name: "וריאציית הפנטזיה: 3.f3", eco: "B12",
+      summary: "לבן מחזק את e4 עם רגלי f. שחור לוקח ומשחק ...e5.",
+      ideas: ["3...dxe4 4.fxe4 e5!", "המלך הלבן חשוף אחרי f3", "פיתוח מהיר"],
+      pgn: "1.e4 c6 2.d4 d5 3.f3 {מגן על e4 עם רגלי. מהלך תוקפני.} dxe4 4.fxe4 e5 {מכה ישירה במרכז. רגלי f של לבן כבר לא שומר על המלך.} 5.Nf3 exd4 6.Bc4 Bc5 {פיתוח ושמירה על הרגלי.} 7.O-O Nf6 {פרש תוקף את e4.} 8.e5 Ng4 {הפרש קופץ קדימה ומכוון ל-e3 ו-f2. לשחור רגלי נוסף ומשחק פעיל.}"
+    },
+    {
+      id: "side-c4", name: "2.c4: פנוב מואץ", eco: "B10",
+      summary: "לבן משחק c4 לפני d4. שחור לוקח בחזרה את d5 עם הפרש.",
+      ideas: ["4...Nf6 ו-...Nxd5", "פיתוח רגיל: ...e6, ...Be7", "שחור בלי חולשות"],
+      pgn: "1.e4 c6 2.c4 d5 3.exd5 cxd5 4.cxd5 Nf6 {לא ממהרים לקחת. קודם מפתחים.} 5.Nc3 Nxd5 6.Nf3 Nc6 7.Bb5 e6 8.O-O Be7 9.d4 O-O {מבנה רגיל עם רגלי מבודד ללבן. שחור משחק נגדו.}"
+    },
+    {
+      id: "side-kia", name: "2.d3: מערך הודי מלכותי", eco: "B10",
+      summary: "לבן משחק מערך סגור עם פיאנקטו. שחור תופס את המרכז.",
+      ideas: ["לתפוס מרכז עם ...e5", "הרץ ל-d6", "להצריח קצר ולהרחיב עם ...a5"],
+      pgn: "1.e4 c6 2.d3 d5 3.Nd2 e5 {שחור תופס את המרכז.} 4.Ngf3 Bd6 5.g3 Nf6 6.Bg2 O-O 7.O-O Re8 8.Re1 Nbd7 {מבנה מרכז חזק. התוכנית: ...a5 ו-...Bc7.}"
+    }
+    ]
+  },
+  {
+    name: "מלכודות ומשחקים מפורסמים",
+    blurb: "טעויות שחייבים להכיר כדי לא ליפול בהן. בתרגול אתה משחק את הצד שמנצל את הטעות.",
+    lines: [
+    {
+      id: "trap-smother", name: "מט חנוק: 5...Ngf6??", eco: "B17", kind: "trap", side: "w",
+      summary: "המלכודת המפורסמת בקרפוב. אחרי 5.Qe2 אסור לשחק ...Ngf6.",
+      ideas: ["אחרי 5.Qe2 שחקו 5...Ndf6", "הרגלי ב-e7 מוצמד למלך", "Nd6 הוא מט כי המלך חסום בכלים של עצמו"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 5.Qe2 {מלכודת! המלכה על קו e.} Ngf6?? {נראה טבעי, אבל זו טעות שמפסידה מיד.} 6.Nd6# {מט! הרגלי ב-e7 מוצמד למלכה ולא יכול לקחת. המלך מוקף בכלים של עצמו.}"
+    },
+    {
+      id: "trap-deepblue", name: "דיפ בלו מול קספרוב, 1997", eco: "B17", kind: "game", side: "w",
+      summary: "המשחק השישי והמכריע. קספרוב שיחק ...h6 מוקדם מדי והמחשב הקריב פרש ב-e6.",
+      ideas: ["אחרי 7.N1f3 שחקו 7...Bd6, לא 7...h6", "הקרבה על e6 פותחת את המלך", "דוגמה מעולה למה סדר מהלכים חשוב"],
+      pgn: "1.e4 c6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 5.Ng5 Ngf6 6.Bd3 e6 7.N1f3 h6?? {הטעות. כאן היה צריך 7...Bd6.} 8.Nxe6 {הקרבה! הפרש לוקח רגלי ושחור לא יכול לקחת בחזרה בשקט.} Qe7 {מצמיד את הפרש למלך.} 9.O-O fxe6 10.Bg6+ Kd8 {המלך בורח למרכז ולא יכול להצריח.} 11.Bf4 b5 12.a4 Bb7 13.Re1 Nd5 14.Bg3 Kc8 15.axb5 cxb5 16.Qd3 Bc6 17.Bf5 {לוחץ על e6.} exf5 18.Rxe7 Bxe7 19.c4 {קספרוב נכנע. לשחור חומר, אבל המלך שלו חשוף והכלים לא מתואמים.}"
+    },
+    {
+      id: "trap-2kn", name: "מט חנוק בשני הפרשים", eco: "B11", kind: "trap", side: "w",
+      summary: "אותו רעיון בדיוק, הפעם בווריאציית שני הפרשים.",
+      ideas: ["כשהמלכה הלבנה על קו e, להיזהר מ-...Nbd7", "Nd6 הוא מט כשהרגלי ב-e7 מוצמד"],
+      pgn: "1.e4 c6 2.Nc3 d5 3.Nf3 dxe4 4.Nxe4 Nf6 5.Qe2 {המלכה על קו e. הרגלי ב-e7 כבר מוצמד.} Nbd7?? {חוסם את המשבצת היחידה של המלך.} 6.Nd6# {מט חנוק שוב.}"
+    }
+    ]
+  }
+  ]
+},
+{
+  id: "italian",
+  name: "הפתיחה האיטלקית",
+  moves: "1.e4 e5 2.Nf3 Nc6 3.Bc4",
+  side: "w",
+  tagline: "הפתיחה הקלאסית לבן. הרץ ב-c4 מכוון ל-f7, הנקודה החלשה ביותר של שחור בתחילת המשחק.",
+  ideas: [
+    "הרץ ב-c4 מכוון ל-f7, המשבצת שרק המלך מגן עליה.",
+    "המרכז: לבן רוצה c3 ואז d4 כדי לבנות מרכז רגלים חזק.",
+    "בגרסה השקטה (d3) לבן בונה לאט: הצרחה, Re1, Nbd2-f1-g3 ו-h3.",
+    "בגרסה החדה לבן מקריב רגלים בשביל פיתוח מהיר והתקפה (גמביט אוונס, Ng5).",
+    "התגובה של שחור קובעת את הסוג: 3...Bc5 (ג'וקו פיאנו) או 3...Nf6 (שני הפרשים)."
+  ],
+  groups: [
+  {
+    name: "ג'וקו פיאנו: 4.c3 Nf6 5.d4",
+    blurb: "לבן בונה מרכז עם c3 ו-d4. הקווים הישנים והחדים של האיטלקית.",
+    lines: [
+    {
+      id: "gp-bd2", name: "הקו הראשי: 6.cxd4 Bb4+ 7.Bd2", eco: "C54",
+      summary: "לבן מקבל מרכז חזק או רגלי מבודד פעיל. הקו הבטוח לבן.",
+      ideas: ["לבנות מרכז e4 ו-d4", "אחרי ...d5, משחק פעיל עם Qb3", "רגלי מבודד ב-d4 נותן שטח והתקפה"],
+      pgn: "1.e4 e5 2.Nf3 {תוקף את e5.} Nc6 3.Bc4 {הפתיחה האיטלקית. הרץ מכוון ל-f7.} Bc5 {ג'וקו פיאנו: שחור מכוון את הרץ שלו ל-f2.} 4.c3 {מכין d4 כדי לתפוס את המרכז.} Nf6 {תוקף את e4.} 5.d4 {לבן פותח את המרכז מיד.} exd4 6.cxd4 {מרכז רגלים מושלם.} Bb4+ 7.Bd2 {חוסם את השח בדרך הבטוחה.} Bxd2+ 8.Nbxd2 d5 {שחור חייב לשבור את המרכז לפני שלבן ישחק e5.} 9.exd5 Nxd5 10.Qb3 {לוחץ על d5 ועל b7.} Nce7 11.O-O O-O 12.Rfe1 c6 13.a4 {ללבן רגלי מבודד אבל משחק פעיל. התוכנית: Ne4, a5 והתקפה.}"
+    },
+    {
+      id: "gp-moller", name: "התקפת מולר: 7.Nc3", eco: "C54",
+      summary: "לבן מקריב את רגלי e4 בשביל התקפה. חד מאוד ומלא מלכודות.",
+      ideas: ["d5 עם טמפו על הרץ", "צריח ל-e4 ואז לקו h", "התקפה מהירה על המלך המוצרח"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3 Nf6 5.d4 exd4 6.cxd4 Bb4+ 7.Nc3 {מקריב את e4!} Nxe4 8.O-O {מקריב גם את הפרש ב-c3.} Bxc3 9.d5 {המהלך של מולר: תוקף את הפרש ב-c6.} Bf6 10.Re1 Ne7 11.Rxe4 {לבן לוקח בחזרה כלי. הצריח פעיל מאוד.} d6 12.Bg5 Bxg5 13.Nxg5 h6 {המהלך הטוב ביותר של שחור.} 14.Qe2 hxg5 15.Re1 Be6 16.dxe6 f6 {סיבוכים חדים. הצריחים של לבן לוחצים על קו e ושחור צריך להגן בדיוק.}"
+    },
+    {
+      id: "gp-greco", name: "המלכודת של גרקו (1619)", eco: "C54", kind: "trap",
+      summary: "אחד המשחקים הכתובים הראשונים. שחור חמדן לוקח צריח ומקבל מט.",
+      ideas: ["Qb3 עם לחץ כפול על f7", "הקרבת איכות בשביל התקפה", "Bxf7+ כשהמלך תקוע במרכז"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3 Nf6 5.d4 exd4 6.cxd4 Bb4+ 7.Nc3 Nxe4 8.O-O Nxc3 9.bxc3 Bxc3? {חמדנות. 9...d5 היה טוב יותר.} 10.Qb3 {מאיים Bxf7+ ותוקף את הרץ.} Bxa1? {לוקח צריח, אבל המלך נשאר במרכז.} 11.Bxf7+ Kf8 12.Bg5 {מאיים Qe6 ו-Bxd8.} Ne7 13.Ne5 Bxd4 14.Bg6 d5 15.Qf3+ Bf5 16.Bxf5 Bxe5 17.Be6+ Bf6 18.Bxf6 gxf6 19.Qxf6+ Ke8 20.Qf7# {מט! דוגמה קלאסית לכוח של פיתוח מול חומר.}"
+    },
+    {
+      id: "gp-e5", name: "6.e5: התקדמות במקום לקיחה", eco: "C54",
+      summary: "לבן מגרש את הפרש מ-f6 לפני שהוא לוקח בחזרה ב-d4.",
+      ideas: ["e5 תופס שטח ומגרש את הפרש", "Bb5 כדי ללחוץ על c6", "פיתוח Nc3 ו-Be3"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3 Nf6 5.d4 exd4 6.e5 {תוקף את הפרש.} d5 {התגובה הנכונה: שחור תוקף את הרץ.} 7.Bb5 Ne4 8.cxd4 Bb6 9.Nc3 O-O 10.Be3 Bg4 {עמדה מאוזנת עם הרבה מתח. ללבן שטח במרכז.}"
+    }
+    ]
+  },
+  {
+    name: "ג'וקו פיאניסימו: 5.d3",
+    blurb: "האיטלקית המודרנית. לבן בונה לאט ולוחץ לאורך זמן. זה מה שאלופי עולם משחקים היום.",
+    lines: [
+    {
+      id: "pz-a4", name: "המערך המודרני עם a4", eco: "C53",
+      summary: "לבן מצריח, משחק Re1, h3 ו-a4, ומעביר את הפרש דרך d2-f1-g3.",
+      ideas: ["h3 מונע ...Bg4", "a4 משיג שטח באגף המלכה", "Nbd2-f1-g3 מביא את הפרש לאגף המלך", "רק אחר כך d4"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.c3 Nf6 5.d3 {הגישה השקטה: שומרים על e4 ולא ממהרים.} d6 6.O-O a6 {משאיר לרץ נסיגה ל-a7.} 7.a4 {תופס שטח באגף המלכה.} Ba7 8.Re1 O-O 9.h3 {מונע ...Bg4 ו-...Ng4.} h6 10.Nbd2 Re8 11.b4 {עוד שטח באגף המלכה.} Be6 12.Bxe6 Rxe6 13.Nf1 {הפרש בדרך ל-g3.} d5 14.Ng3 {לבן מוכן ל-Qe2 ו-Bd2. עמדה עם משחק ארוך.}"
+    },
+    {
+      id: "pz-bb3", name: "4.O-O ו-Bb3: מערך גמיש", eco: "C50",
+      summary: "לבן מצריח מיד, מעביר את הרץ ל-b3 ושומר על אפשרות d4.",
+      ideas: ["Bb3 שומר על הרץ מ-...Na5", "Nbd2-f1-g3", "d4 כשהכלים מוכנים"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.O-O Nf6 5.d3 d6 6.c3 O-O 7.Bb3 {הרץ נסוג מראש ונשאר מכוון ל-f7.} a6 8.Nbd2 Ba7 9.h3 h6 10.Re1 Re8 11.Nf1 Be6 12.Ng3 {כל הכלים פותחו. התוכנית: d4 או Nh4-f5.}"
+    },
+    {
+      id: "pz-pin", name: "המלכודת של ההצמדה ב-g5", eco: "C50", kind: "trap",
+      summary: "שחור מצמיד את הפרש עם ...Bg4 בזמן הלא נכון. לבן מנצל את הקו h.",
+      ideas: ["h3 ואז g4 כשהמלך של שחור לא בסכנה", "Nxe5 מבטל הצמדה", "תמיד לבדוק Bxf7+"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 d6 {הגנת פריז. פסיבי.} 4.Nc3 Bg4 5.h3 Bh5? {טעות. 5...Bxf3 היה הכרחי.} 6.Nxe5! {נראה שהמלכה הלבנה הולכת לאיבוד.} Bxd1?? {לוקח את המלכה.} 7.Bxf7+ Ke7 8.Nd5# {המט של לגאל! שלושה כלים קלים נותנים מט.}"
+    }
+    ]
+  },
+  {
+    name: "גמביט אוונס: 4.b4",
+    blurb: "לבן מקריב רגלי כדי להשיג c3 ו-d4 עם טמפו. הגמביט האהוב של קספרוב ושל השחקנים הרומנטיים.",
+    lines: [
+    {
+      id: "ev-lasker", name: "גמביט מקובל: 5...Ba5 6.d4 d6", eco: "C52",
+      summary: "שחור מחזיר את הרגלי ומחליף מלכות. לבן עם פיתוח טוב יותר.",
+      ideas: ["c3 ו-d4 עם טמפו על הרץ", "מרכז רחב תמורת הרגלי", "Qb3 נגד f7"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 {גמביט אוונס! מקריב רגלי.} Bxb4 5.c3 {טמפו על הרץ ומכין d4.} Ba5 6.d4 {תוקף את המרכז.} d6 7.O-O Bb6 8.dxe5 dxe5 9.Qxd8+ Nxd8 10.Nxe5 Be6 {שחור החזיר את הרגלי. ללבן כלים פעילים יותר ויתרון קטן בפיתוח.}"
+    },
+    {
+      id: "ev-evergreen", name: "המשחק הירוק-עד: אנדרסן נגד דופרן, 1852", eco: "C52", kind: "game",
+      summary: "אחד המשחקים היפים בהיסטוריה. לבן מקריב כמעט הכל ונותן מט עם רצים.",
+      ideas: ["פיתוח מהיר שווה יותר מחומר", "פתיחת קווים נגד המלך", "קומבינציה עם הקרבת מלכה"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O d3 {שחור מחזיר רגלי כדי לחסום את הקווים.} 8.Qb3 Qf6 9.e5 Qg6 10.Re1 Nge7 11.Ba3 {כל הכלים של לבן משתתפים.} b5 12.Qxb5 Rb8 13.Qa4 Bb6 14.Nbd2 Bb7 15.Ne4 Qf5 16.Bxd3 Qh5 17.Nf6+! {הקרבה!} gxf6 18.exf6 Rg8 19.Rad1! {מהלך שקט ומבריק. מחשבים מצאו מאוחר יותר הגנה לשחור, אבל ליד הלוח זה כמעט בלתי אפשרי.} Qxf3? {טבעי, אבל מפסיד.} 20.Rxe7+! Nxe7? {20...Kd8 היה מחזיק יותר.} 21.Qxd7+!! {הקרבת מלכה!} Kxd7 22.Bf5+ Ke8 23.Bd7+ Kf8 24.Bxe7# {מט עם שני רצים. יצירת מופת.}"
+    },
+    {
+      id: "ev-be7", name: "גמביט מקובל: 5...Be7", eco: "C51",
+      summary: "שחור מחזיר את הרץ ל-e7, מקום בטוח. לבן משיג מרכז.",
+      ideas: ["d4 מיד", "e5 מגרש את הפרש מ-f6", "Qh4 או Qg3 להתקפה באגף המלך"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Be7 {נסיגה בטוחה.} 6.d4 Na5 {תוקף את הרץ.} 7.Be2 exd4 8.Qxd4 Nf6 9.e5 Nc6 10.Qh4 Nd5 11.Qg3 g6 12.O-O {ללבן פיתוח ושטח תמורת הרגלי.}"
+    },
+    {
+      id: "ev-declined", name: "גמביט דחוי: 4...Bb6", eco: "C51",
+      summary: "שחור לא לוקח. לבן משתמש ברגלי b לתפוס שטח.",
+      ideas: ["a4-a5 לרדוף אחרי הרץ", "Nd5 נגד הרץ ב-b6", "לבן קיבל שטח בחינם באגף המלכה"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bb6 {שחור לא לוקח.} 5.a4 {מאיים a5 שילכוד את הרץ.} a6 6.Nc3 Nf6 7.Nd5 {לבן משתמש במשבצת d5.} Nxd5 8.exd5 Nd4 9.a5 Ba7 10.Nxd4 Bxd4 11.Ra3 {הצריח נכנס למשחק דרך השורה השלישית.} d6 12.O-O O-O 13.c3 Ba7 14.d4 {ללבן מרכז, שטח באגף המלכה ורגלי חזק ב-d5.}"
+    }
+    ]
+  },
+  {
+    name: "הגנת שני הפרשים: 3...Nf6",
+    blurb: "שחור תוקף את e4 במקום לפתח את הרץ. לבן יכול לתקוף את f7 עם 4.Ng5.",
+    lines: [
+    {
+      id: "tk-main", name: "4.Ng5 d5 5.exd5 Na5: הקו הראשי", eco: "C59",
+      summary: "לבן לוקח רגלי ושחור מקבל פיתוח מהיר. לבן צריך להחזיק את הרגלי בלי להיפגע.",
+      ideas: ["Bb5+ ואז Be2 כדי לשמור על הרץ", "Ne5 כשהפרש מגורש", "לשמור על הרגלי הנוסף ולסיים את הפיתוח"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 {שני הפרשים. שחור תוקף את e4.} 4.Ng5 {תוקף את f7 עם שני כלים!} d5 {חוסם את הרץ.} 5.exd5 Na5 {המהלך הטוב ביותר: תוקף את הרץ.} 6.Bb5+ c6 7.dxc6 bxc6 8.Be2 {הרץ נסוג. לבן עם רגלי נוסף.} h6 9.Nf3 e4 10.Ne5 Bd6 11.d4 exd3 12.Nxd3 Qc7 13.h3 O-O 14.O-O {ללבן רגלי נוסף ושחור עם פיתוח פעיל. לבן צריך להשלים פיתוח בזהירות.}"
+    },
+    {
+      id: "tk-fried", name: "הכבד המטוגן: 5...Nxd5? 6.Nxf7", eco: "C57",
+      summary: "שחור לוקח עם הפרש ולבן מקריב פרש על f7. התקפה מסוכנת מאוד לשחור.",
+      ideas: ["Qf3+ מכריח את המלך למרכז", "Nc3 ו-d4 להביא עוד כלים", "המלך של שחור לא מוצא מקום"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.Ng5 d5 5.exd5 Nxd5? {טבעי, אבל מסוכן. 5...Na5 עדיף.} 6.Nxf7! {הכבד המטוגן! הקרבת פרש.} Kxf7 7.Qf3+ {המלך חייב לצאת להגן על הפרש.} Ke6 8.Nc3 {תוקף את הפרש המוצמד ב-d5.} Nb4 9.Qe4 c6 10.a3 Na6 11.d4 {פותח את המרכז נגד המלך.} Nac7 12.f4 {פותח עוד קו נגד המלך.} Kf7 13.fxe5 Ke8 14.O-O {המלך של שחור לא הצריח וכל הכלים של לבן פעילים. בפועל קשה מאוד להגן על עמדה כזו.}"
+    },
+    {
+      id: "tk-traxler", name: "טרקסלר: 4...Bc5", eco: "C57",
+      summary: "שחור מתעלם מהאיום על f7 ומתקיף בעצמו. הדרך הבטוחה ללבן היא 5.Bxf7+.",
+      ideas: ["5.Bxf7+ במקום 5.Nxf7 החד", "הרץ נסוג ל-d5 ולבן עם רגלי", "המלך של שחור תקוע במרכז"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.Ng5 Bc5 {טרקסלר: מתעלם מהאיום ומכוון ל-f2.} 5.Bxf7+ {הדרך הבטוחה. לבן לוקח רגלי עם שח.} Ke7 6.Bd5 {הרץ מרכזי ומגן על הכל.} d6 7.c3 Rf8 8.O-O h6 9.Nf3 Bg4 10.d3 {לבן עם רגלי נוסף והמלך של שחור לא מוצרח.}"
+    },
+    {
+      id: "tk-d3", name: "4.d3: הדרך השקטה", eco: "C55",
+      summary: "לבן מגן על e4 ובונה כמו בפיאניסימו. העמדות דומות לפתיחה הספרדית.",
+      ideas: ["c3, הצרחה ו-Re1", "Bb3 או Bc2 לשמור על הרץ", "Nbd2-f1-g3"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.d3 {מגן על e4 בשקט.} Be7 5.O-O O-O 6.Re1 d6 7.c3 Na5 {תוקף את הרץ.} 8.Bb5 a6 9.Ba4 b5 10.Bc2 c5 11.Nbd2 Re8 12.Nf1 {הפרש בדרך ל-g3. עמדה סגורה עם משחק ארוך.}"
+    },
+    {
+      id: "tk-d4", name: "4.d4: גמביט סקוטי / מקס לאנגה", eco: "C55",
+      summary: "לבן פותח את המרכז מיד ומקריב רגלי בשביל פיתוח.",
+      ideas: ["Re1 על קו e הפתוח", "Bxd5 ו-Nc3 עם טמפו על המלכה", "Neg5 נגד הרץ ב-e6"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Nf6 4.d4 {פותח את המרכז.} exd4 5.O-O Nxe4 6.Re1 d5 {מחזיר את החומר כדי להגן.} 7.Bxd5 Qxd5 8.Nc3 {תוקף את המלכה.} Qa5 9.Nxe4 Be6 10.Neg5 O-O-O 11.Nxe6 fxe6 12.Rxe6 Bd6 {חומר שווה. ללבן זוג רצים פחות, אבל משחק פעיל וקל.}"
+    }
+    ]
+  },
+  {
+    name: "הגנות אחרות ומלכודות",
+    blurb: "תגובות פחות נפוצות של שחור. חלקן פסיביות, חלקן מלכודות שצריך להכיר.",
+    lines: [
+    {
+      id: "oth-hungarian", name: "הגנה הונגרית: 3...Be7", eco: "C50",
+      summary: "שחור משחק סולידי ופסיבי. לבן לוקח את המרכז בלי מאמץ.",
+      ideas: ["d4 מיד", "מרכז e4 ו-d4 או רגלי ב-d5", "פיתוח טבעי ויתרון שטח"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Be7 {ההגנה ההונגרית: מונעת Ng5 אבל פסיבית.} 4.d4 {לוקח את המרכז.} d6 5.d5 {תופס שטח.} Nb8 6.Bd3 Nf6 7.c4 O-O 8.Nc3 {ללבן יתרון שטח ברור. התוכנית: h3, Be3 ו-g4 או b4.}"
+    },
+    {
+      id: "oth-bs", name: "מלכודת בלקברן-שילינג: 3...Nd4", eco: "C50", kind: "trap", side: "b",
+      summary: "שחור משאיר את e5 בלי הגנה. אם לבן חמדן ולוקח, הוא מקבל מט. בתרגול אתה משחק את השחור.",
+      ideas: ["אחרי 3...Nd4 לא לקחת ב-e5!", "התשובה הנכונה: 4.Nxd4 או 4.O-O", "Nxf7 נראה טוב אבל פותח את המלך"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Nd4 {מלכודת. נראה שהרגלי ב-e5 נופל.} 4.Nxe5? {חמדן.} Qg5 {תוקף את הפרש ואת g2.} 5.Nxf7?? {לוקח צריח? בדיוק מה ששחור רוצה.} Qxg2 6.Rf1 Qxe4+ 7.Be2 Nf3# {מט חנוק. הצריח וכל הכלים של לבן חוסמים את המלך.}"
+    },
+    {
+      id: "oth-bs-correct", name: "איך לשחק נגד 3...Nd4", eco: "C50",
+      summary: "הדרך הנכונה: להחליף את הפרש ולהצריח. ללבן יתרון בפיתוח.",
+      ideas: ["4.Nxd4 exd4", "הצרחה ו-c3", "שחור הפסיד זמן עם הפרש"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 Nd4 4.Nxd4 {מחליף בשקט.} exd4 5.O-O {פיתוח.} Bc5? {נראה טבעי, אבל מאפשר טקטיקה.} 6.Bxf7+! {הקרבה שזוכה בחומר.} Kxf7 7.Qh5+ {שח כפול-מטרה: גם המלך וגם הרץ ב-c5.} g6 8.Qxc5 d5 9.Qxd4 {לבן זכה בשני רגלים והמלך של שחור חשוף.}"
+    },
+    {
+      id: "oth-paris", name: "הגנת פריז: 3...d6", eco: "C50",
+      summary: "שחור מגן על e5 עם רגלי. סולידי אבל פסיבי.",
+      ideas: ["d4 מיד", "Nc3 והצרחה", "להיזהר מ-...Bg4 ולשחק h3"],
+      pgn: "1.e4 e5 2.Nf3 Nc6 3.Bc4 d6 {סולידי אבל סוגר את הרץ של f8.} 4.d4 {לחץ על e5.} exd4 5.Nxd4 {הפרש מרכזי. לבן שולט ב-d5 ו-f5.} Nf6 6.Nc3 Be7 7.O-O O-O 8.h3 {מונע ...Bg4 ו-...Ng4. ללבן יתרון שטח ותוכנית פשוטה: f4 או Be3 ו-Qd2.}"
+    }
+    ]
+  }
+  ]
+}
+];
+
+function parsePgn(text) {
+  const out = []; let pre = "";
+  const re = /\{([^}]*)\}|(\d+\.(?:\.\.)?)|([^\s{}]+)/g; let m;
+  while ((m = re.exec(text))) {
+    if (m[1] !== undefined) { if (out.length) out[out.length - 1].c = m[1].trim(); else pre = m[1].trim(); }
+    else if (m[2]) continue;
+    else { const t = m[3].replace(/^\d+\.(\.\.)?/, ""); if (!t) continue; const mm = t.match(/^(.*?)([!?]+)?$/); out.push({ san: mm[1], nag: mm[2] || "", c: "" }); }
+  }
+  return { pre, moves: out };
+}
+
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const FILES = "abcdefgh";
+    const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (typeof Chess === "undefined") {
+    document.querySelector(".wrap").innerHTML = '<div class="err">ספריית השחמט לא נטענה. בדקו את החיבור לאינטרנט ורעננו את הדף.</div>';
+    return;
+  }
+
+  // ---------- storage ----------
+  function load(key, def) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch (e) { return def; } }
+  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+  let progress = load("oo-progress", {});
+
+  // ---------- text helpers ----------
+  function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+  const TOK = "(?:\\d+\\.(?:\\.\\.)?)?(?:\\.\\.\\.)?(?:[KQRBN][a-h1-8]?x?[a-h][1-8]|O-O(?:-O)?|[a-h]x[a-h][1-8]|[a-h][1-8])[+#]?[!?]*";
+  const RUN = new RegExp(TOK + "(?:(?:\\s+|-)" + TOK + ")*", "g");
+  function fmt(s) { return esc(s).replace(RUN, (m) => '<span class="san" dir="ltr">' + m + "</span>"); }
+  function fig(san) { return san; }
+  function moveLabel(i, san) { const n = Math.floor(i / 2) + 1; return (i % 2 === 0 ? n + "." : n + "...") + san; }
+
+  // ---------- data ----------
+  const LINES = {};
+  for (const op of OPENINGS) {
+    op.all = [];
+    for (const g of op.groups) for (const ln of g.lines) { ln.op = op; ln.group = g; op.all.push(ln); LINES[ln.id] = ln; }
+  }
+  function built(ln) {
+    if (ln._b) return ln._b;
+    const g = new Chess(); const p = parsePgn(ln.pgn); const plies = []; const fens = [g.fen()];
+    for (const mv of p.moves) {
+      const r = g.move(mv.san, { sloppy: true });
+      if (!r) { console.error("Illegal move in", ln.id, mv.san); break; }
+      plies.push({ san: r.san, from: r.from, to: r.to, color: r.color, nag: mv.nag, c: mv.c });
+      fens.push(g.fen());
+    }
+    return (ln._b = { pre: p.pre, plies, fens });
+  }
+  function practiceSide(ln) { return ln.side || ln.op.side; }
+
+  // ---------- state ----------
+  const S = {
+    op: null, line: null, idx: 0, mode: "study", orient: "w", sel: null, dots: [],
+    pr: null, timer: null, flash: null, msg: null
+  };
+  const B = () => built(S.line);
+
+  // ---------- board ----------
+  const boardEl = $("board"), arrowsEl = $("arrows");
+  const sqEls = {};
+  function layoutBoard() {
+    boardEl.innerHTML = "";
+    const ranks = S.orient === "w" ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
+    const files = S.orient === "w" ? FILES.split("") : FILES.split("").reverse();
+    ranks.forEach((r, ri) => files.forEach((f, fi) => {
+      const sq = f + r; const el = document.createElement("div");
+      el.className = "sq" + ((FILES.indexOf(f) + r) % 2 === 0 ? " d" : "");
+      el.dataset.sq = sq;
+      let co = "";
+      if (fi === 0) co += '<span class="co r">' + r + "</span>";
+      if (ri === 7) co += '<span class="co f">' + f + "</span>";
+      el.innerHTML = co + '<div class="pc"></div>';
+      boardEl.appendChild(el); sqEls[sq] = el;
+    }));
+  }
+  function placement(fen) {
+    const out = {}; const rows = fen.split(" ")[0].split("/");
+    rows.forEach((row, i) => { let f = 0; for (const ch of row) { if (/\d/.test(ch)) f += +ch; else { out[FILES[f] + (8 - i)] = (ch === ch.toUpperCase() ? "w" : "b") + ch.toLowerCase(); f++; } } });
+    return out;
+  }
+  function center(sq) {
+    const f = FILES.indexOf(sq[0]), r = +sq[1] - 1;
+    const x = S.orient === "w" ? f : 7 - f, y = S.orient === "w" ? 7 - r : r;
+    return [x * 100 + 50, y * 100 + 50];
+  }
+  function arrow(from, to, color, w) {
+    const [x1, y1] = center(from), [x2, y2] = center(to);
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+    const head = 34, sw = w || 16, ex = x2 - ux * head, ey = y2 - uy * head, px = -uy, py = ux;
+    const sx = x1 + ux * 18, sy = y1 + uy * 18;
+    const pts = [
+      [sx + px * sw / 2, sy + py * sw / 2], [ex + px * sw / 2, ey + py * sw / 2], [ex + px * head * .62, ey + py * head * .62],
+      [x2 - ux * 6, y2 - uy * 6], [ex - px * head * .62, ey - py * head * .62], [ex - px * sw / 2, ey - py * sw / 2], [sx - px * sw / 2, sy - py * sw / 2]
+    ];
+    return '<polygon points="' + pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ") + '" style="fill:' + color + '"/>';
+  }
+  let lastFen = null;
+  function renderBoard(anim) {
+    const b = B(); const fen = b.fens[S.idx]; const pl = placement(fen);
+    const last = S.idx > 0 ? b.plies[S.idx - 1] : null;
+    let chk = null;
+    const g = new Chess(fen);
+    if (g.in_check()) { const t = g.turn(); for (const sq in pl) if (pl[sq] === t + "k") chk = sq; }
+    for (const sq in sqEls) {
+      const el = sqEls[sq]; const pc = el.lastChild;
+      pc.className = "pc" + (pl[sq] ? " pc-" + pl[sq] : "");
+      el.classList.toggle("hl", !!last && (sq === last.from || sq === last.to));
+      el.classList.toggle("sel", S.sel === sq);
+      el.classList.toggle("chk", chk === sq);
+      el.classList.toggle("bad", S.flash === sq);
+      const dot = S.dots.find((d) => d.to === sq);
+      el.classList.toggle("dot", !!dot); el.classList.toggle("cap", !!dot && !!pl[sq]);
+    }
+    // arrows
+    let svg = "";
+    if (S.mode === "study" && S.idx < b.plies.length) { const n = b.plies[S.idx]; svg += arrow(n.from, n.to, "var(--arrow)"); }
+    if (S.mode === "practice" && S.pr && S.pr.hint && S.idx < b.plies.length) { const n = b.plies[S.idx]; svg += arrow(n.from, n.to, "var(--arrow-hint)", 18); }
+    arrowsEl.innerHTML = svg;
+    if (anim && last && !reduceMotion && lastFen === b.fens[S.idx - 1]) {
+      const pcEl = sqEls[last.to].lastChild; const [x1, y1] = center(last.from), [x2, y2] = center(last.to);
+      const size = boardEl.getBoundingClientRect().width / 800;
+      if (pcEl.animate) pcEl.animate([{ transform: `translate(${(x1 - x2) * size}px,${(y1 - y2) * size}px)` }, { transform: "none" }], { duration: 170, easing: "ease-out" });
+    }
+    lastFen = fen;
+  }
+
+  // ---------- pointer input ----------
+  let drag = null;
+  function sqAt(x, y) {
+    const r = boardEl.getBoundingClientRect();
+    if (x < r.left || y < r.top || x >= r.right || y >= r.bottom) return null;
+    const fx = Math.floor((x - r.left) / (r.width / 8)), fy = Math.floor((y - r.top) / (r.height / 8));
+    const f = S.orient === "w" ? fx : 7 - fx, rk = S.orient === "w" ? 7 - fy : fy;
+    return FILES[f] + (rk + 1);
+  }
+  function userTurn() {
+    const b = B();
+    return S.mode === "practice" && S.pr && !S.pr.done && S.idx < b.plies.length && b.plies[S.idx].color === S.pr.side && !S.pr.waiting;
+  }
+  function ownPiece(sq) { const pl = placement(B().fens[S.idx]); return pl[sq] && pl[sq][0] === S.pr.side; }
+  function select(sq) {
+    S.sel = sq;
+    S.dots = sq ? new Chess(B().fens[S.idx]).moves({ square: sq, verbose: true }) : [];
+    renderBoard();
+  }
+  boardEl.addEventListener("pointerdown", (e) => {
+    if (!userTurn()) { if (S.mode === "study") studyClick(); return; }
+    const sq = sqAt(e.clientX, e.clientY); if (!sq) return;
+    if (S.sel && S.sel !== sq && S.dots.some((d) => d.to === sq)) { tryMove(S.sel, sq, true); return; }
+    if (!ownPiece(sq)) { select(null); return; }
+    e.preventDefault();
+    select(sq);
+    const size = boardEl.getBoundingClientRect().width / 8;
+    const g = document.createElement("div");
+    g.className = "ghost pc-" + placement(B().fens[S.idx])[sq];
+    g.style.width = g.style.height = size + "px"; g.style.left = e.clientX + "px"; g.style.top = e.clientY + "px"; g.style.display = "none";
+    document.body.appendChild(g);
+    drag = { from: sq, ghost: g, x: e.clientX, y: e.clientY, moved: false, id: e.pointerId };
+    try { boardEl.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  boardEl.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) { drag.moved = true; drag.ghost.style.display = "block"; sqEls[drag.from].classList.add("dragfrom"); }
+    drag.ghost.style.left = e.clientX + "px"; drag.ghost.style.top = e.clientY + "px";
+  });
+  function endDrag(e, cancel) {
+    if (!drag) return;
+    const d = drag; drag = null; d.ghost.remove(); sqEls[d.from] && sqEls[d.from].classList.remove("dragfrom");
+    if (cancel || !d.moved) return;
+    const to = sqAt(e.clientX, e.clientY);
+    if (to && to !== d.from) tryMove(d.from, to, false); else renderBoard();
+  }
+  boardEl.addEventListener("pointerup", (e) => endDrag(e, false));
+  boardEl.addEventListener("pointercancel", (e) => endDrag(e, true));
+  function studyClick() { if (S.idx < B().plies.length) go(S.idx + 1, true); }
+
+  // ---------- practice ----------
+  function clearTimer() { if (S.timer) { clearTimeout(S.timer); S.timer = null; } }
+  function startPractice() {
+    clearTimer();
+    S.mode = "practice"; S.idx = 0; S.sel = null; S.dots = []; S.flash = null;
+    S.pr = { side: practiceSide(S.line), mistakes: 0, tries: 0, hint: false, done: false, waiting: false, reveals: 0 };
+    S.msg = { kind: "", big: "תורך", sub: "" };
+    S.orient = S.pr.side; layoutBoard(); renderAll(); opponent();
+  }
+  function opponent() {
+    const b = B(); const pr = S.pr;
+    if (S.idx >= b.plies.length) { finish(); return; }
+    if (b.plies[S.idx].color === pr.side) { pr.waiting = false; renderAll(); return; }
+    pr.waiting = true; renderPanel();
+    S.timer = setTimeout(() => {
+      S.timer = null; S.idx++; pr.waiting = false; renderBoard(true);
+      if (S.idx >= b.plies.length) finish(); else { renderPanel(); renderSheet(); }
+    }, 550);
+  }
+  function tryMove(from, to, anim) {
+    const b = B(); const pr = S.pr;
+    const legal = new Chess(b.fens[S.idx]).moves({ square: from, verbose: true }).find((m) => m.to === to);
+    if (!legal) { if (ownPiece(to)) select(to); else select(null); return; }
+    const exp = b.plies[S.idx];
+    S.sel = null; S.dots = [];
+    if (exp.from === from && exp.to === to) {
+      pr.tries = 0; pr.hint = false; S.flash = null; S.idx++;
+      S.msg = { kind: "ok", big: "נכון! " + moveLabel(S.idx - 1, exp.san), sub: "" };
+      renderBoard(anim); renderSheet();
+      opponent();
+    } else {
+      pr.mistakes++; pr.tries++;
+      if (pr.tries >= 2) pr.hint = true;
+      S.flash = to;
+      S.msg = { kind: "no", big: moveLabel(S.idx, legal.san) + " הוא מהלך חוקי, אבל לא המהלך בקו.", sub: pr.hint ? "החץ הכתום מראה את המהלך הנכון." : "נסו שוב. אחרי טעות נוספת יופיע רמז." };
+      renderBoard();
+      boardEl.classList.remove("shake"); void boardEl.offsetWidth; if (!reduceMotion) boardEl.classList.add("shake");
+      setTimeout(() => { if (S.flash === to) { S.flash = null; renderBoard(); } }, 600);
+      renderPanel();
+    }
+  }
+  function reveal() {
+    if (!userTurn()) return;
+    const b = B(); const exp = b.plies[S.idx];
+    S.pr.mistakes++; S.pr.reveals++; S.pr.tries = 0; S.pr.hint = false; S.sel = null; S.dots = [];
+    S.idx++; S.msg = { kind: "no", big: "המהלך היה " + moveLabel(S.idx - 1, exp.san), sub: "נספר כטעות. נסו לזכור אותו לפעם הבאה." };
+    renderBoard(true); renderSheet(); opponent();
+  }
+  function finish() {
+    const pr = S.pr; pr.done = true; pr.waiting = false;
+    const prev = progress[S.line.id] || {};
+    progress[S.line.id] = { done: true, clean: !!prev.clean || pr.mistakes === 0, best: Math.min(prev.best == null ? 99 : prev.best, pr.mistakes) };
+    save("oo-progress", progress);
+    renderAll();
+  }
+
+  // ---------- navigation ----------
+  function go(i, anim) {
+    const n = B().plies.length; i = Math.max(0, Math.min(n, i));
+    const step = i === S.idx + 1; S.idx = i; S.sel = null; S.dots = [];
+    renderBoard(anim && step); renderPanel(); renderSheet(); renderNav();
+  }
+  $("nStart").onclick = () => go(0);
+  $("nPrev").onclick = () => go(S.idx - 1);
+  $("nNext").onclick = () => go(S.idx + 1, true);
+  $("nEnd").onclick = () => go(B().plies.length);
+  document.addEventListener("keydown", (e) => {
+    if (S.mode !== "study" || e.target.closest("input,textarea")) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); go(S.idx + 1, true); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); go(S.idx - 1); }
+    else if (e.key === "Home") { e.preventDefault(); go(0); }
+    else if (e.key === "End") { e.preventDefault(); go(B().plies.length); }
+  });
+  $("flipBtn").onclick = () => { S.orient = S.orient === "w" ? "b" : "w"; layoutBoard(); renderBoard(); };
+  $("mStudy").onclick = () => setMode("study");
+  $("mPractice").onclick = () => setMode("practice");
+  function setMode(m) {
+    clearTimer();
+    if (m === "practice") { startPractice(); return; }
+    S.mode = "study"; S.pr = null; S.sel = null; S.dots = []; S.flash = null;
+    S.orient = S.line.op.side; layoutBoard(); renderAll();
+  }
+
+  // ---------- selection ----------
+  function selectOpening(id, keepLine) {
+    S.op = OPENINGS.find((o) => o.id === id) || OPENINGS[0];
+    renderTabs(); renderSide();
+    if (!keepLine) selectLine(S.op.all[0].id);
+  }
+  function selectLine(id) {
+    const ln = LINES[id]; if (!ln) return;
+    clearTimer();
+    if (S.op !== ln.op) { S.op = ln.op; renderTabs(); }
+    S.line = ln; S.idx = 0; S.sel = null; S.dots = []; S.flash = null;
+    save("oo-last", id);
+    try { history.replaceState(null, "", "#" + id); } catch (e) {}
+    document.body.classList.remove("drawer");
+    renderSide();
+    if (S.mode === "practice") startPractice();
+    else { S.orient = ln.op.side; layoutBoard(); renderAll(); }
+  }
+  function nextLine() {
+    const all = S.op.all; const i = all.indexOf(S.line);
+    selectLine(all[(i + 1) % all.length].id);
+  }
+  function randomLine() {
+    const all = S.op.all; const pool = all.filter((l) => !(progress[l.id] && progress[l.id].clean) && l !== S.line);
+    const src = pool.length ? pool : all.filter((l) => l !== S.line);
+    S.mode = "practice";
+    selectLine(src[Math.floor(Math.random() * src.length)].id);
+  }
+
+  // ---------- rendering ----------
+  function renderTabs() {
+    $("tabs").innerHTML = OPENINGS.map((o) => {
+      const done = o.all.filter((l) => progress[l.id] && progress[l.id].done).length;
+      return '<button type="button" class="tab" data-op="' + o.id + '" aria-pressed="' + (o === S.op) + '">' +
+        '<span class="ico pc-' + o.side + (o.id === "caro" ? "n" : "b") + '"></span><span><b>' + esc(o.name) + "</b><small>" +
+        (o.side === "w" ? "משחקים בלבן" : "משחקים בשחור") + " · " + done + "/" + o.all.length + " קווים</small></span></button>";
+    }).join("");
+    $("tabs").querySelectorAll(".tab").forEach((b) => (b.onclick = () => { if (b.dataset.op !== S.op.id) selectOpening(b.dataset.op); }));
+  }
+  function renderSide() {
+    const op = S.op;
+    const done = op.all.filter((l) => progress[l.id] && progress[l.id].done).length;
+    let h = '<div class="about"><h2>' + esc(op.name) + '</h2><span class="mv san" dir="ltr">' + esc(op.moves) + "</span><p>" + fmt(op.tagline) + "</p>" +
+      '<details><summary>רעיונות מרכזיים</summary><ul>' + op.ideas.map((i) => "<li>" + fmt(i) + "</li>").join("") + "</ul></details>" +
+      '<div class="prog"><div class="bar"><i style="width:' + Math.round((done / op.all.length) * 100) + '%"></i></div><span>' + done + " מתוך " + op.all.length + "</span></div>" +
+      '<button type="button" class="rand" id="randBtn">תרגול קו אקראי</button></div>';
+    for (const g of op.groups) {
+      h += '<div class="group"><h3>' + fmt(g.name) + '</h3><div class="gb">' + fmt(g.blurb) + "</div>";
+      for (const l of g.lines) {
+        const p = progress[l.id];
+        const st = p ? (p.clean ? '<span class="st clean">✓</span>' : '<span class="st done">✓</span>') : '<span class="st"></span>';
+        const tag = l.kind === "trap" ? '<span class="tag">מלכודת</span>' : l.kind === "game" ? '<span class="tag">משחק מפורסם</span>' : "";
+        h += '<button type="button" class="ln" data-id="' + l.id + '" aria-current="' + (l === S.line) + '">' + st +
+          "<span>" + fmt(l.name) + tag + '</span><span class="eco">' + l.eco + "</span></button>";
+      }
+      h += "</div>";
+    }
+    const side = $("side"); const scroll = side.scrollTop; side.innerHTML = h; side.scrollTop = scroll;
+    side.querySelectorAll(".ln").forEach((b) => (b.onclick = () => selectLine(b.dataset.id)));
+    $("randBtn").onclick = randomLine;
+  }
+  function renderHead() {
+    const l = S.line;
+    $("crumb").innerHTML = esc(l.op.name) + " · " + fmt(l.group.name) + ' · <span class="san">' + l.eco + "</span>";
+    $("lineName").innerHTML = fmt(l.name);
+    $("lineSum").innerHTML = fmt(l.summary);
+    $("mStudy").setAttribute("aria-pressed", S.mode === "study");
+    $("mPractice").setAttribute("aria-pressed", S.mode === "practice");
+    $("navBar").hidden = S.mode !== "study";
+  }
+  function renderNav() {
+    const n = B().plies.length;
+    $("nStart").disabled = $("nPrev").disabled = S.idx === 0;
+    $("nNext").disabled = $("nEnd").disabled = S.idx === n;
+    $("counter").textContent = S.idx + " / " + n;
+  }
+  function noteCard() {
+    const b = B();
+    if (S.idx === 0) {
+      return '<div class="card note"><h4>לפני שמתחילים</h4><div class="txt">' + fmt(b.pre || S.line.summary) +
+        '</div><div class="txt empty" style="margin-top:8px;font-size:14px">' + (S.mode === "study" ? "לחצו על החץ, על הלוח או על מקש → כדי להתקדם. החץ הירוק על הלוח מראה את המהלך הבא." : "") + "</div></div>";
+    }
+    const p = b.plies[S.idx - 1];
+    return '<div class="card note"><h4>' + (p.color === "w" ? "מהלך של לבן" : "מהלך של שחור") + '</h4><div class="mvl">' + esc(moveLabel(S.idx - 1, fig(p.san))) +
+      (p.nag ? '<span class="nag">' + esc(p.nag) + "</span>" : "") + "</div>" +
+      (p.c ? '<p class="txt">' + fmt(p.c) + "</p>" : '<p class="txt empty">מהלך טבעי בקו. אין כאן הערה מיוחדת.</p>') + "</div>";
+  }
+  function ideasCard() {
+    return '<div class="card ideas"><h4>מה לזכור בקו הזה</h4><ul>' + S.line.ideas.map((i) => "<li>" + fmt(i) + "</li>").join("") + "</ul></div>";
+  }
+  function renderPanel() {
+    const panel = $("panel");
+    let h = "";
+    if (S.mode === "study") {
+      h = noteCard() + ideasCard() + '<div class="card sheet" id="sheet"></div>';
+    } else {
+      const pr = S.pr; const b = B(); const sideName = pr.side === "w" ? "הלבן" : "השחור", sideIn = pr.side === "w" ? "בלבן" : "בשחור";
+      let st;
+      if (pr.done) {
+        const p = progress[S.line.id];
+        st = '<div class="card status win"><div class="big">' + (pr.mistakes === 0 ? "מושלם! הקו הושלם בלי טעויות." : "הקו הושלם.") + '</div><div class="sub">' +
+          (pr.mistakes === 0 ? "הקו מסומן כנלמד." : "היו " + pr.mistakes + " טעויות. נסו שוב כדי לסמן את הקו כנלמד בלי טעויות.") +
+          '</div><div class="stats"><span>טעויות <b>' + pr.mistakes + '</b></span><span>הכי טוב <b>' + (p ? p.best : pr.mistakes) + "</b></span></div>" +
+          '<div class="row"><button type="button" class="btn primary" id="pNext">לקו הבא</button><button type="button" class="btn" id="pAgain">שוב</button><button type="button" class="btn" id="pStudy">לימוד הקו</button></div></div>';
+      } else {
+        const turn = userTurn();
+        const m = S.msg || {};
+        const kind = m.kind === "no" ? " no" : m.kind === "ok" && !turn ? " ok" : "";
+        const big = pr.waiting ? "היריב משחק..." : turn ? (m.kind === "no" ? m.big : "תורך: מצאו את המהלך של " + sideName) : m.big;
+        const sub = turn ? (m.kind === "no" ? m.sub : (S.idx > 0 && m.kind === "ok" ? fmt(m.big) + ". " : "") + "גררו או לחצו על כלי ואז על המשבצת.") : "";
+        st = '<div class="card status' + kind + '"><h4>תרגול · אתם משחקים ' + sideIn + '</h4><div class="big">' + fmt(big) + '</div><div class="sub">' + sub + "</div>" +
+          '<div class="stats"><span>מהלך <b>' + Math.min(S.idx + 1, b.plies.length) + "/" + b.plies.length + "</b></span><span>טעויות <b>" + pr.mistakes + "</b></span></div>" +
+          '<div class="row"><button type="button" class="btn" id="pHint"' + (turn ? "" : " disabled") + '>רמז</button><button type="button" class="btn" id="pReveal"' + (turn ? "" : " disabled") +
+          '>הראו את המהלך</button><button type="button" class="btn" id="pRestart">מההתחלה</button></div></div>';
+      }
+      h = st + (S.idx > 0 ? noteCard() : ideasCard()) + '<div class="card sheet" id="sheet"></div>';
+    }
+    panel.innerHTML = h;
+    const on = (id, fn) => { const el = $(id); if (el) el.onclick = fn; };
+    on("pNext", nextLine); on("pAgain", startPractice); on("pStudy", () => setMode("study")); on("pRestart", startPractice);
+    on("pReveal", reveal);
+    on("pHint", () => { if (userTurn()) { S.pr.hint = true; const exp = B().plies[S.idx]; select(exp.from); renderBoard(); } });
+    renderSheet();
+  }
+  function renderSheet() {
+    const el = $("sheet"); if (!el) return;
+    const b = B(); const n = b.plies.length;
+    const shown = S.mode === "study" ? n : S.idx;
+    if (!shown) { el.innerHTML = '<h4>טופס המהלכים</h4><div class="empty-sheet">המהלכים יופיעו כאן.</div>'; return; }
+    let rows = "";
+    for (let i = 0; i < shown; i += 2) {
+      const cell = (j) => {
+        if (j >= shown) return "<td></td>";
+        const p = b.plies[j];
+        const cls = "m" + (j === S.idx - 1 ? " cur" : "") + (p.c ? " has" : "") + (S.mode === "study" && j >= S.idx ? " future" : "");
+        return '<td><button type="button" class="' + cls + '" data-i="' + (j + 1) + '">' + esc(fig(p.san)) + (p.nag ? '<span class="nag">' + esc(p.nag) + "</span>" : "") + "</button></td>";
+      };
+      rows += '<tr><td class="n">' + (i / 2 + 1) + ".</td>" + cell(i) + cell(i + 1) + "</tr>";
+    }
+    el.innerHTML = '<h4>טופס המהלכים</h4><div class="sheet-body" id="sheetBody"><table>' + rows + "</table></div>";
+    if (S.mode === "study") el.querySelectorAll(".m").forEach((m) => (m.onclick = () => go(+m.dataset.i, +m.dataset.i === S.idx + 1)));
+    const cur = el.querySelector(".m.cur"); const body = $("sheetBody");
+    if (cur && body) { const top = cur.offsetTop - body.clientHeight / 2; body.scrollTop = Math.max(0, top); }
+  }
+  function renderAll() { renderHead(); renderBoard(); renderPanel(); renderNav(); renderTabs(); }
+
+  // ---------- drawer ----------
+  $("drawerBtn").onclick = () => document.body.classList.add("drawer");
+  $("scrim").onclick = () => document.body.classList.remove("drawer");
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") document.body.classList.remove("drawer"); });
+
+  // ---------- boot ----------
+  function start(data) {
+    const hash = (location.hash || "").slice(1);
+    const id = (data && data.line) || (LINES[hash] ? hash : null) || load("oo-last", null);
+    const ln = LINES[id] || OPENINGS[0].all[0];
+    S.op = ln.op; S.mode = "study"; renderTabs();
+    selectLine(ln.id);
+    if (data && data.idx && S.mode === "study") go(data.idx);
+  }
+  window.claude && window.claude.hot && window.claude.hot.snapshot && window.claude.hot.snapshot(() => ({ line: S.line && S.line.id, idx: S.mode === "study" ? S.idx : 0 }));
+  if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(start);
+  else start((window.claude && window.claude.hot && window.claude.hot.data) || {});
+})();
+
+</script>
+
+</body>
+</html>
